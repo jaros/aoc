@@ -1,6 +1,6 @@
 const { readFileSync } = require("fs");
 
-console.log("Monkey Math part 1");
+console.log("Monkey Math part 2");
 
 let monkeyOps = {};
 
@@ -84,7 +84,6 @@ let calculate = (inputs) => {
   });
 
   let humnPath = monkeyOps["root"].findPathToChild([], "humn");
-  // console.log(humnPath);
 
   humnPath.shift();
 
@@ -92,16 +91,12 @@ let calculate = (inputs) => {
   let monkeyPathRoot = getSecondOperand("root", humnPathRoot);
   let monkeySum = monkeyOps[monkeyPathRoot].calculate();
 
-  // humnPathRoot == robotSum
-
   let equationResult = monkeySum;
   let equationRoot = humnPathRoot;
 
   while (humnPath.length !== 0) {
     let operandHuman = humnPath.shift();
-    let rollbackOperator = oppositeOperation(monkeyOps[equationRoot].operator);
 
-    // monkeyOps[equationRoot].operator special treat for '-' and '/'
     // c = op1 - op2
     // op1 = c + op2
     // op2 = op1 - c
@@ -117,6 +112,7 @@ let calculate = (inputs) => {
 
     let isOp1Monkey =  monkeyOps[equationRoot].op2 === operandHuman;
     let originalOperator = monkeyOps[equationRoot].operator;
+    let rollbackOperator = oppositeOperation(originalOperator);
     if (isOp1Monkey && (originalOperator === '-' || originalOperator === '/')) {
       equationResult = applyOperation(monkeyOpVal, equationResult, originalOperator);  
     } else {
@@ -133,5 +129,5 @@ let readInput = () => readFileSync(`./input.txt`, "utf-8").split(/\r?\n/);
 
 const inputs = readInput();
 let start = new Date().getTime();
-calculate(inputs); // humnPath
+calculate(inputs);
 console.log(`spent time: ${new Date().getTime() - start} ms`)
