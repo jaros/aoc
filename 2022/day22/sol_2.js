@@ -2,7 +2,7 @@ const { readFileSync } = require("fs");
 
 console.log("Monkey Map part 1");
 
-let readInput = () => readFileSync(`./input.txt`, "utf-8");
+let readInput = () => readFileSync(`./test.txt`, "utf-8");
 
 let sideLen = 0;
 let grid = [];
@@ -80,19 +80,22 @@ let calculate = (inputs) => {
   // console.log(mapStr)
   // console.log(commands)
   let mapLines = mapStr.split("\n");
-
+  let maxX = Number.MIN_VALUE;
   for (let line of mapLines) {
     let row = [];
     for (let i = 0; i < line.length; i++) {
       row.push(line.charAt(i));
     }
+    maxX = Math.max(maxX, row.length);
     grid.push(row);
   }
+
+  sideLen = Math.max(grid.length, maxX)/4;
+
   // console.log("rows sizes", grid.map(row => row.length))
   // console.log("comms", commands)
 
-  sideLen = grid[0].indexOf(".");
-  let startPos = [0, sideLen]; // findNextAllowPosOnGrid([0, 0], 1);
+  let startPos = [0, grid[0].indexOf(".")]; // findNextAllowPosOnGrid([0, 0], 1);
   console.log("startPos", startPos);
 
   let pos = startPos;
