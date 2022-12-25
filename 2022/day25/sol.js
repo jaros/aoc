@@ -2,7 +2,7 @@ const { readFileSync } = require("fs");
 
 console.log("Day24 Blizzard Basin. part 1");
 
-let readInput = () => readFileSync(`./input.txt`, "utf-8");
+let readInput = () => readFileSync(`./test.txt`, "utf-8");
 
 const SNAFU_BASE = 5;
 
@@ -16,10 +16,11 @@ let numMap = {
 
 let toDecimal = (snafu) => {
   let sum = 0;
+  let order = Math.pow(SNAFU_BASE, snafu.length-1);
   for (let i=0; i < snafu.length; i++) {
     let val = numMap[snafu[i]];
-    let place = Math.pow(5, snafu.length-i-1);
-    sum += (val * place);
+    sum += (val * order);
+    order /= SNAFU_BASE;
   }
   return sum;
 }
@@ -102,8 +103,10 @@ calculate(inputs);
 // console.log('8 -> 2= ', toSnafu(8))
 // console.log('20 -> 1-0 ', toSnafu(20))
 // console.log('2022 -> 1=11-2 ', toSnafu(2022))
-// console.log('314159265 -> 1121-1110-1=0 ', toSnafu(314159265)) // TODO ERROR!!!
+// console.log('314159265 -> 1121-1110-1=0 ', toSnafu(314159265))
 // console.log('1747 -> 1=-0-2 ', toSnafu(1747))
 console.log(`spent time: ${new Date().getTime() - start} ms`);
 
-// 2-05==12-122-=1-1-22    NOT
+// 4890
+// 124030
+// 2=-1=0
