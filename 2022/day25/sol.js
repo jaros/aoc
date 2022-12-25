@@ -27,24 +27,20 @@ let toDecimal = (snafu) => {
 
 let snafuBaseNormal = (decimalNum) => {
   let sum = '';
-  let k=1;
-  let fullPart = SNAFU_BASE;
-  while (decimalNum >= fullPart) {
-    fullPart = fullPart * SNAFU_BASE; 
-    k++;
+  let fullPart = 1;
+  let fullPartCheck = 1;
+
+  while (decimalNum >= fullPartCheck) {
+    fullPart = fullPartCheck;
+    fullPartCheck *= SNAFU_BASE;
   } 
 
-  k--;
-  fullPart /= SNAFU_BASE;
-
-  while (k > 0) {
+  while (fullPart >= 1) {
    let t = Math.floor(decimalNum / fullPart);
    sum += t;
    decimalNum -= t * fullPart;
    fullPart /= SNAFU_BASE;
-   k--;
   }
-  sum += decimalNum;
   return sum;
 }
 
