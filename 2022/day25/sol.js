@@ -16,11 +16,11 @@ let numMap = {
 
 let toDecimal = (snafu) => {
   let sum = 0;
-  let order = Math.pow(SNAFU_BASE, snafu.length-1);
-  for (let i=0; i < snafu.length; i++) {
+  let order = 1;
+  for (let i=snafu.length-1; i >= 0; i--) {
     let val = numMap[snafu[i]];
     sum += (val * order);
-    order /= SNAFU_BASE;
+    order *= SNAFU_BASE;
   }
   return sum;
 }
