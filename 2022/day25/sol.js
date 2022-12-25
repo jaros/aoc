@@ -4,6 +4,8 @@ console.log("Day24 Blizzard Basin. part 1");
 
 let readInput = () => readFileSync(`./test.txt`, "utf-8");
 
+const SNAFU_BASE = 5;
+
 let numMap = {
   '2': 2,
   '1': 1,
@@ -17,47 +19,36 @@ let toDecimal = (snafu) => {
   for (let i=0; i < snafu.length; i++) {
     let val = numMap[snafu[i]];
     let place = Math.pow(5, snafu.length-i-1);
-    // console.log(val, place);
     sum += (val * place);
   }
   return sum;
 }
 
-// 2=-1=0
-// 5 -> 10
-let toSnafu = (decimalNum) => {
+let snafuBaseNormal = (decimalNum) => {
   let sum = '';
-//  let decStr = (decimalNum+'').split('');
-  let base = 5;
   let k=1;
   let fullPart = 5;
   while (decimalNum >= fullPart) {
-    fullPart = fullPart * base; 
+    fullPart = fullPart * SNAFU_BASE; 
     k++;
-    //console.log('full part', fullPart, 'k', k);
   } 
 
   k--;
-  fullPart /= base;
+  fullPart /= SNAFU_BASE;
 
-  //console.log('==> ',k, fullPart)
-  //let prevDiff = 0;
   while (k > 0) {
    let t = Math.floor(decimalNum / fullPart);
-   //t += prevDiff;
-   if (t == 3) {
-    //t = 1;
-    preDiff = 2;
-   } else if (t == 4) {
-    //t =1;
-   }
    sum += t;
    decimalNum -= t * fullPart;
-   fullPart /= base;
+   fullPart /= SNAFU_BASE;
    k--;
   }
   sum += decimalNum;
+  return sum;
+}
 
+let toSnafu = (decimalNum) => {
+  let sum = snafuBaseNormal(decimalNum);
   let passOver = 0;
   let parts = sum.split('');
   console.log(sum)
@@ -72,11 +63,11 @@ let toSnafu = (decimalNum) => {
     } else if (num == 4) {
       parts[i] = '-';
       passOver = 1;
+    } else if (num > 4) {
+      let mod = num % SNAFU_BASE;
+      parts[i] = num-mod;
+      passOver = mod;
     }
-    else if (num > 4) {
-      passOver = num % base;
-    }
-    
   }
   if (passOver > 0) {
     parts.unshift(passOver);
@@ -88,27 +79,24 @@ let toSnafu = (decimalNum) => {
 let calculate = (inputs) => {
   // console.log(inputs)
   let snafus = inputs.split("\n");
-  // let snafusSumInDecimal = 0;
-  let = snafusSumInDecimal = snafus.reduce((acc, snafu) => acc + toDecimal(snafu), 0);
-  // for (let snafu of snafus) {
-  //   let decimalNum = toDecimal(snafu);
-  //   snafusSumInDecimal += decimalNum;
-  //   // console.log(decimalNum);
-  // }
+  let snafusSumInDecimal = snafus.reduce((acc, snafu) => acc + toDecimal(snafu), 0);
+  console.log(snafusSumInDecimal)
   let snafuSum = toSnafu(snafusSumInDecimal);
-  console.log(snafuSum.join(""))
+  console.log(snafuSum)
 }
 
 
 const inputs = readInput();
 let start = new Date().getTime();
-// calculate(inputs);
-// toSnafu(125)
-console.log('7 -> 12 ', toSnafu(7));
-console.log('5 -> 10 ', toSnafu(5));
-console.log('10 -> 20 ', toSnafu(10));
-console.log('3 -> 1= ', toSnafu(3));
-console.log('4 -> 1- ', toSnafu(4));
-console.log('8 -> 2= ', toSnafu(8))
+calculate(inputs);
+// console.log('7 -> 12 ', toSnafu(7));
+// console.log('5 -> 10 ', toSnafu(5));
+// console.log('10 -> 20 ', toSnafu(10));
+// console.log('3 -> 1= ', toSnafu(3));
+// console.log('4 -> 1- ', toSnafu(4));
+// console.log('8 -> 2= ', toSnafu(8))
+// console.log('20 -> 1-0 ', toSnafu(20))
+// console.log('2022 -> 1=11-2 ', toSnafu(2022))
 console.log(`spent time: ${new Date().getTime() - start} ms`);
 
+// 2-05==12-122-=1-1-22    NOT
