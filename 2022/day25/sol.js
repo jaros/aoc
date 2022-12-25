@@ -2,7 +2,7 @@ const { readFileSync } = require("fs");
 
 console.log("Day24 Blizzard Basin. part 1");
 
-let readInput = () => readFileSync(`./test.txt`, "utf-8");
+let readInput = () => readFileSync(`./input.txt`, "utf-8");
 
 const SNAFU_BASE = 5;
 
@@ -27,7 +27,7 @@ let toDecimal = (snafu) => {
 let snafuBaseNormal = (decimalNum) => {
   let sum = '';
   let k=1;
-  let fullPart = 5;
+  let fullPart = SNAFU_BASE;
   while (decimalNum >= fullPart) {
     fullPart = fullPart * SNAFU_BASE; 
     k++;
@@ -55,18 +55,23 @@ let toSnafu = (decimalNum) => {
   for (let i=parts.length - 1; i >= 0; i--) {
     let num = Number(parts[i]);
     num += passOver;
-    passOver = 0;
-    parts[i] = num; 
+
+    if (num > 4) {
+      let mod = num % SNAFU_BASE;
+      passOver = Math.floor(num/SNAFU_BASE);
+      num = mod;
+      parts[i] = num;
+    } else {
+      parts[i] = num; 
+      passOver = 0;
+    }
+    
     if (num == 3) {
       parts[i] = '=';
-      passOver = 1;
+      passOver += 1;
     } else if (num == 4) {
       parts[i] = '-';
-      passOver = 1;
-    } else if (num > 4) {
-      let mod = num % SNAFU_BASE;
-      parts[i] = num-mod;
-      passOver = mod;
+      passOver += 1;
     }
   }
   if (passOver > 0) {
@@ -97,6 +102,8 @@ calculate(inputs);
 // console.log('8 -> 2= ', toSnafu(8))
 // console.log('20 -> 1-0 ', toSnafu(20))
 // console.log('2022 -> 1=11-2 ', toSnafu(2022))
+// console.log('314159265 -> 1121-1110-1=0 ', toSnafu(314159265)) // TODO ERROR!!!
+// console.log('1747 -> 1=-0-2 ', toSnafu(1747))
 console.log(`spent time: ${new Date().getTime() - start} ms`);
 
 // 2-05==12-122-=1-1-22    NOT
