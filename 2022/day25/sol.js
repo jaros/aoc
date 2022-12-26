@@ -6,7 +6,7 @@ let readInput = () => readFileSync(`./test.txt`, "utf-8");
 
 const SNAFU_BASE = 5;
 
-let numMap = {
+let snafuMap = {
   '2': 2,
   '1': 1,
   '0': 0,
@@ -14,69 +14,32 @@ let numMap = {
   '=': -2
 };
 
+let decMap = {
+  2: 2,
+  1: 1,
+  0: 0,
+  3: '=',
+  4: '-'
+};
+
 let toDecimal = (snafu) => {
-  let sum = 0;
-  let order = 1;
-  for (let i=snafu.length-1; i >= 0; i--) {
-    let val = numMap[snafu[i]];
-    sum += (val * order);
-    order *= SNAFU_BASE;
-  }
-  return sum;
+  let order = snafu.length;
+  return snafu.split('').reduce((acc, c) => acc + snafuMap[c] * Math.pow(SNAFU_BASE, --order), 0);
 }
 
-let snafuBaseNormal = (decimalNum) => {
-  let sum = '';
-  let fullPart = 1;
-  let fullPartCheck = 1;
-
-  while (decimalNum >= fullPartCheck) {
-    fullPart = fullPartCheck;
-    fullPartCheck *= SNAFU_BASE;
-  } 
-
-  while (fullPart >= 1) {
-   let t = Math.floor(decimalNum / fullPart);
-   sum += t;
-   decimalNum -= t * fullPart;
-   fullPart /= SNAFU_BASE;
-  }
-  return sum;
-}
-
-let toSnafu = (decimalNum) => {
-  let sum = snafuBaseNormal(decimalNum);
-  let passOver = 0;
-  let parts = sum.split('');
-  console.log(sum)
-  for (let i=parts.length - 1; i >= 0; i--) {
-    let num = Number(parts[i]);
-    num += passOver;
-
-    if (num > 4) {
-      let mod = num % SNAFU_BASE;
-      passOver = Math.floor(num/SNAFU_BASE);
-      num = mod;
-      parts[i] = num;
-    } else {
-      parts[i] = num; 
-      passOver = 0;
+let toSnafu = (dec) => {
+  let res = [];
+  while (dec > 0) {
+    let minOrder = dec % SNAFU_BASE;
+    res.unshift(decMap[minOrder]);
+    if (minOrder > 2) {
+      dec += (SNAFU_BASE - minOrder);
     }
-    
-    if (num == 3) {
-      parts[i] = '=';
-      passOver += 1;
-    } else if (num == 4) {
-      parts[i] = '-';
-      passOver += 1;
-    }
+    dec = Math.floor(dec / SNAFU_BASE);
   }
-  if (passOver > 0) {
-    parts.unshift(passOver);
-  }
-	
-  return parts.join(''); 
+  return res.join('');
 }
+
 
 let calculate = (inputs) => {
   // console.log(inputs)
