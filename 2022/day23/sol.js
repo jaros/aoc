@@ -54,25 +54,39 @@ let hasNeighbourAt = (elfLoc, checkDirs) => {
 
 let getElfNextPosition = (elfLoc) => {
   let [y, x] = elfLoc;
+  let dirKey = getNextDirection(elfLoc);
+  if (dirKey === null) {
+    return null;
+  }
+
+  let [dy, dx] = directions[dirKey];
+  return [y + dy, x + dx];
+};
+
+let getNextDirection = (elfLoc) => {
   // check whether can move at all
   if (!hasNeighbour(elfLoc)) {
     return null;
-  } else if (!hasNeighbourAt(elfLoc, ['N', 'NE', 'NW'])) {
-    let dir = directions['N'];
-    return [y + dir[0], x + dir[1]];
-  } else if (!hasNeighbourAt(elfLoc, ['S', 'SE', 'SW'])) {
-    let dir = directions['S'];
-    return [y + dir[0], x + dir[1]];
-  } else if (!hasNeighbourAt(elfLoc, ['W', 'NW', 'SW'])) {
-    let dir = directions['W'];
-    return [y + dir[0], x + dir[1]];
-  } else if (!hasNeighbourAt(elfLoc, ['E', 'NE', 'SE'])) {
-    let dir = directions['E'];
-    return [y + dir[0], x + dir[1]];
-  } else {
-    return null;
   }
-};
+  if (!hasNeighbourAt(elfLoc, ['N', 'NE', 'NW'])) {
+    return 'N';
+  } else if (!hasNeighbourAt(elfLoc, ['S', 'SE', 'SW'])) {
+    return 'S';
+  } else if (!hasNeighbourAt(elfLoc, ['W', 'NW', 'SW'])) {
+    return 'W';
+  } else if (!hasNeighbourAt(elfLoc, ['E', 'NE', 'SE'])) {
+    return 'E';
+  }
+  return null;
+}
+
+let locKey = (loc) => `${loc[0]},${loc[1]}`;
+
+let moveElf = (move) => {
+ let [from, to] = move;
+ grid[from[0]][from[1]] = '.';
+ grid[to[0]][to[1]] = '#';
+}
 
 let calculate = (inputs) => {
   console.log(inputs);
@@ -84,9 +98,28 @@ let calculate = (inputs) => {
   let round = 10;
   while(round--> 0) {
     let nextLocations = elvesLocations.map(getElfNextPosition);
+    let locToElves = {};
+    for (let i=0; i < nextLocations.length; i++) {
+      let loc = locKey(nextLocations[i]);
+      let elvesIndices = locToElves[loc] || [];
+      elvesIndices.push(i);
+      locToElves[loc] = elvesIndices;
+    }
+    let nextLocMove = [];
+    for (let i=0; i < nextLocations.lenght; i++) {
+      let from = elvesLocations[i];
+      let to = from;
+      let toMaybe = nextLocations[i];
+      if (locToElves[locKey(toMaybe)].length === 1) {
+        to = toMaybe;
+      }
+    }
+    nextLocMove.forEach(moveElf);
+    elvesLocations = nextLocMove.map(m => m.to);
   }
-
-  console.log(elvesLocations);
+  
+  console.log('\n\n');
+  console.log(grid.map(row => row.join('')).join('\n'));
 };
 
 const inputs = readInput();
