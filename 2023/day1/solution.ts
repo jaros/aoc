@@ -1,7 +1,7 @@
 
 import { Solution, readInput, title, withTime } from "../../common/types";
 
-const getElves = (data: string) => data.split("\n\n").map(items => items.split("\n").map(Number).reduce((a,b) => a+b), 0);
+const getElves = (data: string) => data.split("\n\n").map(items => items.split("\n").map(Number).reduce((a, b) => a + b), 0);
 
 const part1 = (data: string) => {
   const elves = getElves(data);
@@ -10,12 +10,13 @@ const part1 = (data: string) => {
 
 const part2 = (data: string) => {
   const elves = getElves(data);
-  elves.sort((a,b) => b-a)
+  elves.sort((a, b) => b - a)
   console.log("top 3 calories", elves[0] + elves[1] + elves[2]);
 }
 
-export const solve: Solution = (part, source) => {
+export const solve: Solution = (source) => {
   title("Calorie Counting.");
-  const calculate = withTime(part === "part_1" ? part1 : part2);
-  calculate(readInput(source, import.meta.dir));
+  const data = readInput(source, import.meta.dir)
+  withTime(part1)(data);
+  withTime(part2)(data);
 };

@@ -1,7 +1,7 @@
 import { readFileSync } from "fs";
 import path from "path";
 
-export type Solution = (part: "part_1" | "part_2", source: Source) => void;
+export type Solution = (source: Source) => void;
 
 export enum Source {
     INPUT = "input.txt",
@@ -12,13 +12,14 @@ export const readInput = (source: Source, dir: string) => readFileSync(path.reso
 
 export const title = (header: string) =>
     console.log(`
-${new Date().toISOString()}
-${header}
-`);
+\x1b[32m${new Date().toISOString()}
+\x1b[31m${header}
+\x1b[0m`);
 
 export const withTime = <A extends any[], R>(f: (...a: A) => R) => (
     ...args: A
 ): R => {
+    console.log(f.name);
     let start = new Date().getTime();
     const value = f(...args);
     console.log(`spent time: ${new Date().getTime() - start} ms`)
