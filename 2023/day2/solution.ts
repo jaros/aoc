@@ -17,45 +17,49 @@ let moveScore: Record<string, number> = {
   'Z': 3
 }
 
-let movesAling: Record<string, string> = {
+let transpile: Record<string, string> = {
   'A': 'X',
   'B': 'Y',
   'C': 'Z'
 }
 
-let getScore = (op: string, me: string) => {
-  if (op == me) {
-    return 3;
-  }
-  if ((me == 'X' && op == 'Z') || (me == 'Z' && op == 'Y') || (me == 'Y' && op == 'X')) {
-    return 6;
-  }
-  return 0;
-}
+let wins = [['X', 'Z'], ['Z', 'Y'], ['Y', 'X']];
 
-const part1 = (data: string) => {
-  let games = data.split("\n");
+let getScore = (me: string, op: string) =>
+  me == op ? 3
+    : wins.find(it => me == it[0] && op == it[1]) ? 6
+      : 0;
+
+const getGames = (data: string) => data.split('\n').map(line => line.split(' '));
+
+const count = (data: string, gameScore: (result: string[]) => string[]) => {
   let sum = 0;
-  for (let game of games) {
-    let [op, me] = game.split(' ');
-    sum += moveScore[me];
-    sum += getScore(movesAling[op], me);
+  for (let res of getGames(data)) {
+    const [me, op] = gameScore(res);
+    sum += (moveScore[me] + getScore(me, op));
   }
-  console.log("part 1 score:", sum);
+  return sum;
 }
 
+const part1 = (data: string) => count(data, ([op, me]) => [me, transpile[op]]);
 
-let getMyMove = (op: string, res: string) {
-  
+
+let getMyMove = (op: string, res: string): string => {
+  switch (res) {
+    case 'Y': // draw
+      return op;
+    case 'Z': // win
+      return wins.find(([_, o]) => o == op)?.[0] ?? '';
+    default: // lose X
+      return wins.find(([me, _]) => me == op)?.[1] ?? '';
+  }
 }
 
 // X means you need to lose, Y means you need to end the round in a draw, and Z means you need to win
-const part2 = (data: string) => {
-  let games = data.split("\n");
-  let sum = 0;
-
-  console.log("part 2", );
-}
+const part2 = (data: string) => count(data, ([op, res]) => {
+  const opponent = transpile[op];
+  return [getMyMove(opponent, res), opponent];
+});
 
 export const solve: Solution = (source) => {
   title("Rock Paper Scissors.");

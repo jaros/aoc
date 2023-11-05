@@ -19,9 +19,9 @@ export const title = (header: string) =>
 export const withTime = <A extends any[], R>(f: (...a: A) => R) => (
     ...args: A
 ): R => {
-    console.log(f.name);
     let start = new Date().getTime();
     const value = f(...args);
-    console.log(`spent time: ${new Date().getTime() - start} ms`)
+    console.log(`${f.name}: ${value}`);
+    console.log(`spent time: ${new Date().getTime() - start} ms \n`);
     return value;
 };
