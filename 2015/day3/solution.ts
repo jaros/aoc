@@ -17,8 +17,7 @@ const initTracking = () => {
       }
       visited.add(current());  
     },
-    visited,
-    count: (other?: Set<string>): number => other ? new Set([...other, ...visited]).size : visited.size,
+    visited
   } 
 }
 
@@ -27,7 +26,7 @@ const part1 = (data: string) => {
   for (let i=0; i < data.length; i++) {
     santa.move(data.charAt(i));
   }
-  return santa.count();
+  return santa.visited.size;
 };
 
 const part2 = (data: string) => {
@@ -37,7 +36,7 @@ const part2 = (data: string) => {
   for (let i=0; i < data.length; i++) {
     party(i).move(data.charAt(i));
   }
-  return santa.count(robot.visited);
+  return new Set([...santa.visited, ...robot.visited]).size
 };
 
 export const solve: Solution = (source) => {
