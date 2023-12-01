@@ -1,21 +1,25 @@
 
 import { Solution, readInput, title, withTime } from "../../common/types";
 
-const getElves = (data: string) => data.split("\n\n").map(items => items.split("\n").map(Number).reduce((a, b) => a + b), 0);
-
 const part1 = (data: string) => {
-  const elves = getElves(data);
-  console.log("max calories", Math.max(...elves));
+  let calibrations = data.split("\n").map(line => {
+    let val = "";
+    for (let i = 0; i < line.length; i++) {
+      let c = Number(line.charAt(i));
+      if (Number.isInteger(c))
+        val += c;
+    }
+    return parseInt(val[0] + val[val.length - 1]);
+  });
+  return calibrations.reduce((a, b) => a + b, 0);
 }
 
 const part2 = (data: string) => {
-  const elves = getElves(data);
-  elves.sort((a, b) => b - a)
-  console.log("top 3 calories", elves[0] + elves[1] + elves[2]);
+  return 0;
 }
 
 export const solve: Solution = (source) => {
-  title("Calorie Counting.");
+  title("Day 1: Trebuchet?!");
   const data = readInput(source, import.meta.dir)
   withTime(part1)(data);
   withTime(part2)(data);
