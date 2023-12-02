@@ -1,8 +1,7 @@
 
 import { Solution, readInput, title, withTime } from "../../common/types";
 
-type CubeColor = "red" | "green" | "blue";
-type GameSet = Record<CubeColor, number>;
+type GameSet = Record<string, number>;
 type Game = {
   nr: number;
   sets: GameSet[];
@@ -10,10 +9,10 @@ type Game = {
 
 const loadGames = (data: string): Game[] => data.split("\n").map(line => {
   let [gNr, sets] = line.split(": ");
-  let gameSetsStrings: string[] = sets.split("; ");
+  let gameSetsStrings = sets.split("; ");
   let gameSets = gameSetsStrings.map(set => set.split(", ").map(cube => {
     let [cubeCount, cubeColor] = cube.split(" ");
-    return [cubeColor as CubeColor, Number(cubeCount)];
+    return [cubeColor, Number(cubeCount)];
   }));
   return {
     nr: Number(gNr.split(" ")[1]),
@@ -21,51 +20,35 @@ const loadGames = (data: string): Game[] => data.split("\n").map(line => {
   };
 });
 
+const toSum = (a: number, b: number) => a + b;
+
 const part1 = (data: string) => {
-  const games = loadGames(data);
   const gameLimits: GameSet = {
     red: 12,
     green: 13,
     blue: 14
   };
-  return games.map(game =>
-    game.sets.every(set => (set.blue ?? 0) <= gameLimits.blue && (set.red ?? 0) <= gameLimits.red && (set.green ?? 0) <= gameLimits.green)
-      ? game.nr : 0).reduce((a, b) => a + b, 0);
+  return loadGames(data)
+    .filter(g => g.sets.map(Object.entries).every(set => set.every(([color, count]) => count <= gameLimits[color])))
+    .map(g => g.nr)
+    .reduce(toSum);
 }
 
 const part2 = (data: string) => {
-  const games = loadGames(data);
-
-  let initCount = () => ({
+  let getMin = (acc: Record<string, number>, curr: Record<string, number>) => {
+    for (let color in curr) {
+      acc[color] = Math.max(curr[color], acc[color]);
+    }
+    return acc;
+  }
+  let initAcc = () => ({
     red: 0,
     green: 0,
     blue: 0
   });
+  let sets: GameSet[] = loadGames(data).map(game => game.sets.reduce(getMin, initAcc()));
 
-  let minGames: { nr: number; set: GameSet }[] = games.map(game => ({
-    nr: game.nr,
-    set: game.sets.reduce((acc, curr) => {
-      acc.blue = Math.max(curr.blue ?? 0, acc.blue);
-      acc.green = Math.max(curr.green ?? 0, acc.green);
-      acc.red = Math.max(curr.red ?? 0, acc.red);
-      return acc;
-    }, initCount())
-  }));
-
-  return minGames.map(g => {
-    let power = 1;
-    if (g.set.blue) {
-      power *= g.set.blue;
-    }
-    if (g.set.green) {
-      power *= g.set.green;
-    }
-    if (g.set.red) {
-      power *= g.set.red;
-    }
-    return power;
-  }).reduce((a, b,) => a + b, 0);
-
+  return sets.map(set => Object.values(set).reduce((acc, curr) => acc * curr)).reduce(toSum);
 }
 
 export const solve: Solution = (source) => {
