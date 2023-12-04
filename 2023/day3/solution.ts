@@ -5,17 +5,28 @@ let isNum = (c: string) => c >= '0' && c <= '9';
 
 let isSymbol = (c: string | undefined) => c && !isNum(c) && c != ".";
 
+let isGear = (c: string) => c == '*';
+
+type GearNum = {num: number, from: number, to: number};
+
+const fetchNum = (row: string, col: number): GearNum => {
+  let numS = '' + row[col];
+  let k = col + 1;
+  while (isNum(row[k])) {
+    numS = numS + row[k++];
+  }
+  let to = k-1;
+
+  k = col - 1;
+  while (isNum(row[k])) {
+    numS = row[k--] + numS;
+  }
+  let from = k+1;
+  return {num: Number(numS), from, to};
+}
+
 const part1 = (data: string) => {
   let rows = data.split("\n");
-
-  let fetchNum = (i: number, j: number): { num: number, col: number } => {
-    let row = rows[i];
-    let numS = '';
-    while (isNum(row[j])) {
-      numS += row[j++];
-    }
-    return { num: Number(numS), col: j - 1 };
-  }
 
   let hasAdjSymbol = (i: number, from: number, to: number): boolean => {
     if (isSymbol(rows[i][from - 1]) || isSymbol(rows[i][to + 1])) { // same row borders
@@ -33,50 +44,29 @@ const part1 = (data: string) => {
   for (let i = 0; i < rows.length; i++) {
     for (let j = 0; j < rows[i].length; j++) {
       if (isNum(rows[i][j])) {
-        let { num, col } = fetchNum(i, j)
-        // console.log(num, j, col);
-        if (hasAdjSymbol(i, j, col)) {
+        let { num, to } = fetchNum(rows[i], j)
+        if (hasAdjSymbol(i, j, to)) {
           total += num;
         }
-        j = col;
+        j = to;
       }
     }
   }
   return total;
 }
-
-let isGear = (c: string) => c == '*';
-
-type GearNum = {num: number, from: number, to: number, row: number};
+//531561
 
 const part2 = (data: string) => {
   let rows = data.split("\n");
 
-  let fetchNum = (r: number, c: number): GearNum => {
-    let row = rows[r];
-    let numS = '' + row[c];
-    let k = c + 1;
-    while (isNum(row[k])) {
-      numS = numS + row[k++];
-    }
-    let to = k-1;
-
-    k = c - 1;
-    while (isNum(row[k])) {
-      numS = row[k--] + numS;
-    }
-    let from = k+1;
-    return {num: Number(numS), from, to, row: r};
-  }
-
   let findSurroundNums = (i: number, j: number): number[] => {
-    let nums = new Set<GearNum>();
+    let nums = new Set<GearNum & {row: number}>();
     for (let r=i-1; r <= i+1; r++) {
       for (let c=j-1; c <= j+1; c++) {
         let adj = rows[r]?.[c];
         if (isNum(adj)) {
-          let gearNum = fetchNum(r, c);
-          nums.add(gearNum);
+          let gearNum = fetchNum(rows[r], c);
+          nums.add({...gearNum, row: r});
           c = gearNum.to;
         }
       }
@@ -100,6 +90,7 @@ const part2 = (data: string) => {
   }
   return total;
 }
+// 83279367
 
 export const solve: Solution = (source) => {
   title("Day 3: Gear Ratios");
