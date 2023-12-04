@@ -21,38 +21,25 @@ let getScratchcards = (data: string): Scratchcard[] => {
   return scratchcards;
 }
 
-const part1 = (data: string) => {
-  let cards = getScratchcards(data);
-  let total = 0;
-  for (let card of cards) {
-    let points = 0;
-    for (let c of card.haveCards) {
-      if (card.winCards.has(c)) {
-        points = points == 0 ? 1 : points * 2;
-      }
-    }
-    total += points;
-  }
-  return total;
-}
+const part1 = (data: string) => getScratchcards(data)
+  .reduce(
+    (total, card) =>
+      total + card.haveCards.reduce((p, c) => card.winCards.has(c) ? (p == 0 ? 1 : p * 2) : p, 0),
+    0);
+//22488
 
 const part2 = (data: string) => {
   let cards = getScratchcards(data);
   let totalCards: Record<number, number> = Object.fromEntries(cards.map(c => [c.cardNr, 1]));
-  for (let card of cards) {
-    let matches = 0;
-    for (let c of card.haveCards) {
-      if (card.winCards.has(c)) {
-        matches++;
-      }
-    }
-    for (let i = 1; i <= matches; i++) {
-      let cardNr = card.cardNr;
-      totalCards[cardNr + i] = totalCards[cardNr + i] + totalCards[cardNr];
+  for (let {cardNr, haveCards, winCards} of cards) {
+    let matches = haveCards.filter(c => winCards.has(c)).length;
+    for (let i = cardNr + 1; i <= cardNr + matches; i++) {
+      totalCards[i] += totalCards[cardNr];
     }
   }
   return Object.values(totalCards).reduce((a, b) => a + b);
 }
+//7013204
 
 export const solve: Solution = (source) => {
   title("Day 4: Scratchcards");
