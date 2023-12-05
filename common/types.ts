@@ -10,18 +10,14 @@ export enum Source {
 
 export const readInput = (source: Source, dir: string) => readFileSync(path.resolve(dir, source), "utf-8");
 
-export const title = (header: string) =>
-    console.log(`
-\x1b[32m${new Date().toISOString()}
-\x1b[31m${header}
-\x1b[0m`);
+export const title = (header: string) => console.error(`${header}\n`)
 
 export const withTime = <A extends any[], R>(f: (...a: A) => R) => (
     ...args: A
 ): R => {
-    let start = new Date().getTime();
+    console.time(f.name)
     const value = f(...args);
-    console.log(`${f.name}: ${value}`);
-    console.log(`spent time: ${new Date().getTime() - start} ms \n`);
+    console.timeEnd(f.name)
+    console.error(`answer: ${value}\n`)
     return value;
 };

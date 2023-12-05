@@ -1,5 +1,6 @@
 
 import { Solution, readInput, title, withTime } from "../../common/types";
+import { sum } from "../utils";
 
 type GameSet = Record<string, number>;
 type Game = {
@@ -20,8 +21,6 @@ const loadGames = (data: string): Game[] => data.split("\n").map(line => {
   };
 });
 
-const toSum = (a: number, b: number) => a + b;
-
 const part1 = (data: string) => {
   const gameLimits: GameSet = {
     red: 12,
@@ -31,7 +30,7 @@ const part1 = (data: string) => {
   return loadGames(data)
     .filter(g => g.sets.map(Object.entries).every(set => set.every(([color, count]) => count <= gameLimits[color])))
     .map(g => g.nr)
-    .reduce(toSum);
+    .reduce(sum);
 }
 
 const part2 = (data: string) => {
@@ -48,7 +47,7 @@ const part2 = (data: string) => {
   });
   let sets: GameSet[] = loadGames(data).map(game => game.sets.reduce(getMin, initAcc()));
 
-  return sets.map(set => Object.values(set).reduce((acc, curr) => acc * curr)).reduce(toSum);
+  return sets.map(set => Object.values(set).reduce((acc, curr) => acc * curr)).reduce(sum);
 }
 
 export const solve: Solution = (source) => {

@@ -1,5 +1,6 @@
 
 import { Solution, readInput, title, withTime } from "../../common/types";
+import { min } from "../utils";
 
 type MapConvert = {
   dst: number;
@@ -30,8 +31,6 @@ const parseInput = (data: string): GardenInput => {
   });
   return { seeds, convertersDescr };
 }
-
-
 
 const part1 = (data: string) => {
   let input = parseInput(data);
@@ -64,16 +63,6 @@ const part1 = (data: string) => {
   return Math.min(...Object.values(maps[maps.length - 1]));
 }
 
-type Range = {
-  from: number; // inclusive
-  to: number; // inclusive
-}
-
-type Component = {
-  title: string;
-  ranges: Range[];
-}
-
 const applyMappings = (
   ranges: Array<[number, number]>,
   maps: ConverterDescription[]
@@ -100,11 +89,11 @@ const applyMappings = (
   return ranges;
 }
 
-function intersect(
+const intersect = (
   a: [number, number], // 30, 31
   b: [number, number], // 20, 30
   offset: number
-): { match: Array<[number, number]>; remains: Array<[number, number]> } {
+): { match: Array<[number, number]>; remains: Array<[number, number]> } => {
   if (a[1] < b[0] || a[0] > b[1]) {
     // console.log("source doesn't overlap with range") 
     return {
@@ -141,7 +130,7 @@ function intersect(
   }
 }
 
-function mergeOverlappingRanges(ranges: Array<[number, number]>) {
+const mergeOverlappingRanges = (ranges: Array<[number, number]>) => {
   if (ranges.length < 2) {
       return ranges;
   }
@@ -169,10 +158,7 @@ const part2 = (data: string) => {
     for (let i = 0; i < seeds.length; i += 2) {
         ranges.push([seeds[i], seeds[i] + seeds[i + 1] - 1]);
     }
-    return applyMappings(ranges, convertersDescr).reduce(
-      (min, range) => Math.min(min, range[0]),
-      Number.POSITIVE_INFINITY
-  );
+    return applyMappings(ranges, convertersDescr).map(range => range[0]).reduce(min);
 }
 
 export const solve: Solution = (source) => {

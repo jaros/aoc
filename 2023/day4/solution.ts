@@ -1,5 +1,6 @@
 
 import { Solution, readInput, title, withTime } from "../../common/types";
+import { sum } from "../utils";
 
 type Scratchcard = {
   cardNr: number;
@@ -37,7 +38,7 @@ const part2 = (data: string) => {
       totalCards[i] += totalCards[cardNr];
     }
   }
-  return Object.values(totalCards).reduce((a, b) => a + b);
+  return Object.values(totalCards).reduce(sum);
 }
 //7013204
 
