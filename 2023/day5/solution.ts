@@ -74,35 +74,30 @@ type Component = {
   ranges: Range[];
 }
 
-function transform(
+const applyMappings = (
   ranges: Array<[number, number]>,
   maps: ConverterDescription[]
-): number {
+): Array<[number, number]> => {
   for (const map of maps) {
       const match: Array<[number, number]> = [];
-      let remains: Array<[number, number]> = ranges.slice();
+      let remains: Array<[number, number]> = [...ranges];
       for (const {dst, src, size} of map.mapConverters) {
           const newRemains: Array<[number, number]> = [];
-          for (const range of remains) {
+          for (const range of remains) { // upstream
               const transit = intersect(
                   range,
                   [src, src + size - 1],
                   dst - src
               );
               match.push(...transit.match);
-              newRemains.push(...transit.remains);
+              newRemains.push(...transit.remains); // remains is what not found in mapping - remains equal to source
           }
-          remains = wrap(newRemains);
+          remains = mergeOverlappingRanges(newRemains);
       }
-      ranges = wrap([...match, ...remains]);
+      ranges = mergeOverlappingRanges([...match, ...remains]);
   }
 
-  const result = ranges.reduce(
-      (min, range) => Math.min(min, range[0]),
-      Number.POSITIVE_INFINITY
-  );
-
-  return result;
+  return ranges;
 }
 
 function intersect(
@@ -111,29 +106,34 @@ function intersect(
   offset: number
 ): { match: Array<[number, number]>; remains: Array<[number, number]> } {
   if (a[1] < b[0] || a[0] > b[1]) {
-      return {
+    // console.log("source doesn't overlap with range") 
+    return {
           match: [],
           remains: [a]
       };
   } else if (a[0] < b[0] && a[1] > b[1]) {
-      return {
+    // console.log("source covers range") 
+    return {
           match: [[b[0] + offset, b[1] + offset]],
           remains: [
-              [a[0], b[0] - 1],
-              [b[1] + 1, a[1]]
+            [a[0], b[0] - 1],
+            [b[1] + 1, a[1]]
           ]
       };
   } else if (a[0] >= b[0] && a[1] <= b[1]) {
+    // console.log("source inside range")
       return {
           match: [[a[0] + offset, a[1] + offset]],
           remains: []
       };
   } else if (a[0] < b[0]) {
+    // console.log("source intersects by right side")
       return {
           match: [[b[0] + offset, a[1] + offset]],
           remains: [[a[0], b[0] - 1]]
       };
   } else {
+    // console.log("source intersects by left side")
       return {
           match: [[a[0] + offset, b[1] + offset]],
           remains: [[b[1] + 1, a[1]]]
@@ -141,26 +141,24 @@ function intersect(
   }
 }
 
-function wrap(ranges: Array<[number, number]>) {
+function mergeOverlappingRanges(ranges: Array<[number, number]>) {
   if (ranges.length < 2) {
       return ranges;
   }
-  const sorted = ranges.sort((a, b) => (a[0] < b[0] ? -1 : 1));
+  ranges.sort((a, b) => (a[0] < b[0] ? -1 : 1));
   const result: Array<[number, number]> = [];
-  let pos = 1;
-  let [l, r] = sorted[0];
-  while (pos <= sorted.length) {
-      const [nextL, nextR] =
-          pos === sorted.length ? [r + 1, r + 1] : sorted[pos];
-      if (r < nextL) {
-          result.push([l, r]);
-          l = nextL;
-          r = nextR;
-      } else {
-          r = Math.max(r, nextR);
-      }
-      pos++;
+  let [first, ...restRanges] = ranges;
+  let [l, r] = first;
+  for (let [nextL, nextR] of restRanges) {
+    if (r < nextL) {
+      result.push([l, r]);
+      l = nextL;
+      r = nextR;
+    } else {
+      r = Math.max(r, nextR);
+    }
   }
+  result.push([l, r]);
   return result;
 }
 
@@ -171,7 +169,10 @@ const part2 = (data: string) => {
     for (let i = 0; i < seeds.length; i += 2) {
         ranges.push([seeds[i], seeds[i] + seeds[i + 1] - 1]);
     }
-    return transform(ranges, convertersDescr);
+    return applyMappings(ranges, convertersDescr).reduce(
+      (min, range) => Math.min(min, range[0]),
+      Number.POSITIVE_INFINITY
+  );
 }
 
 export const solve: Solution = (source) => {
