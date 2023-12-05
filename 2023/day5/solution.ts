@@ -2,9 +2,9 @@
 import { Solution, readInput, title, withTime } from "../../common/types";
 
 type MapConvert = {
-  destFrom: number;
-  sourceFrom: number;
-  rangeLength: number;
+  dst: number;
+  src: number;
+  size: number;
 }
 
 type ConverterDescription = {
@@ -24,7 +24,7 @@ const parseInput = (data: string): GardenInput => {
     let [title, ...convs] = convert.split("\n");
     let mapConverters = convs.map<MapConvert>(conv => {
       let [destStart, sourceStart, rangeLength] = conv.split(" ").map(Number);
-      return { destFrom: destStart, sourceFrom: sourceStart, rangeLength };
+      return { dst: destStart, src: sourceStart, size: rangeLength };
     });
     return { title, mapConverters }
   });
@@ -39,9 +39,9 @@ const part1 = (data: string) => {
 
   let findDest = (source: number, maps: MapConvert[]): number => {
     for (let map of maps) {
-      let end = map.sourceFrom + map.rangeLength;
-      if (source >= map.sourceFrom && source < end) {
-        return source + (map.destFrom - map.sourceFrom);
+      let end = map.src + map.size;
+      if (source >= map.src && source < end) {
+        return source + (map.dst - map.src);
       }
     }
     return source;
@@ -74,68 +74,104 @@ type Component = {
   ranges: Range[];
 }
 
-const part2 = (data: string) => {
-  let input = parseInput(data);
-  let seeds: Range[] = [];
-  for (let i = 0; i < input.seeds.length; i += 2) {
-    let from = input.seeds[i];
-    let len = input.seeds[i + 1];
-    let to = from + len -1;
-    // console.log("from", from, "to", to)
-    // for (let k = from; k < to; k++) {
-    //   seeds.push(k);
-    // }
-    seeds.push({from, to});
-  }
-
-  // console.log("seeds ranges", seeds)
-  // console.log(JSON.stringify(input, null, 2))
-
-  // there can be multiple ranges overlaps with one source range
-  let findDest = (source: Range, maps: MapConvert[]): Range => {
-    let ranges = [];
-    for (let map of maps) {
-      let mapSourceTo = map.sourceFrom + map.rangeLength - 1;
-      // find if source overlaps with mapSourceTo
-      if (source.from <= mapSourceTo && source.to >= map.sourceFrom) {
-        let from = Math.max(source.from, map.sourceFrom);
-        let to = Math.min(source.to, mapSourceTo);
-        let diff = map.destFrom - map.sourceFrom;
-        ranges.push( { from: from + diff, to: to + diff });
+function transform(
+  ranges: Array<[number, number]>,
+  maps: ConverterDescription[]
+): number {
+  for (const map of maps) {
+      const match: Array<[number, number]> = [];
+      let remains: Array<[number, number]> = ranges.slice();
+      for (const {dst, src, size} of map.mapConverters) {
+          const newRemains: Array<[number, number]> = [];
+          for (const range of remains) {
+              const transit = intersect(
+                  range,
+                  [src, src + size - 1],
+                  dst - src
+              );
+              match.push(...transit.match);
+              newRemains.push(...transit.remains);
+          }
+          remains = wrap(newRemains);
       }
-    }
-    if (ranges.length == 0) {
-      return {from: source.from, to: source.to};
-    }
-    else {
-      ranges.sort((a, b) => {
-        let min = a.from - b.from;
-        return min == 0 ? a.to - b.to : min;
-      });
-      console.log("sorted ranges", ranges);
-      return ranges[0];
-    }
-    // console.log("ranges", ranges);
-    // return ranges.length ? ranges : [{from: source.from, to: source.to}];
+      ranges = wrap([...match, ...remains]);
   }
 
-  let maps: Component[] = [];
-  for (let i = 0; i < input.convertersDescr.length; i++) {
-    let descr = input.convertersDescr[i];
-    let sources = i == 0 ? seeds : maps[i - 1].ranges;
-    let currentMapping: Range[] = [];
-    for (let source of sources) {
-      let dest = findDest(source, descr.mapConverters);
-      currentMapping.push(dest);
-    }
-    // currentMapping.sort((a, b) => a.from - b.from);
-    maps.push({title: descr.title, ranges: currentMapping});
-  }
+  const result = ranges.reduce(
+      (min, range) => Math.min(min, range[0]),
+      Number.POSITIVE_INFINITY
+  );
 
-  // lowest location
-  console.log("maps", maps);
-  let locationsStartRanges = maps[maps.length - 1].ranges.map(r => r.from);
-  return Math.min(...locationsStartRanges);
+  return result;
+}
+
+function intersect(
+  a: [number, number], // 30, 31
+  b: [number, number], // 20, 30
+  offset: number
+): { match: Array<[number, number]>; remains: Array<[number, number]> } {
+  if (a[1] < b[0] || a[0] > b[1]) {
+      return {
+          match: [],
+          remains: [a]
+      };
+  } else if (a[0] < b[0] && a[1] > b[1]) {
+      return {
+          match: [[b[0] + offset, b[1] + offset]],
+          remains: [
+              [a[0], b[0] - 1],
+              [b[1] + 1, a[1]]
+          ]
+      };
+  } else if (a[0] >= b[0] && a[1] <= b[1]) {
+      return {
+          match: [[a[0] + offset, a[1] + offset]],
+          remains: []
+      };
+  } else if (a[0] < b[0]) {
+      return {
+          match: [[b[0] + offset, a[1] + offset]],
+          remains: [[a[0], b[0] - 1]]
+      };
+  } else {
+      return {
+          match: [[a[0] + offset, b[1] + offset]],
+          remains: [[b[1] + 1, a[1]]]
+      };
+  }
+}
+
+function wrap(ranges: Array<[number, number]>) {
+  if (ranges.length < 2) {
+      return ranges;
+  }
+  const sorted = ranges.sort((a, b) => (a[0] < b[0] ? -1 : 1));
+  const result: Array<[number, number]> = [];
+  let pos = 1;
+  let [l, r] = sorted[0];
+  while (pos <= sorted.length) {
+      const [nextL, nextR] =
+          pos === sorted.length ? [r + 1, r + 1] : sorted[pos];
+      if (r < nextL) {
+          result.push([l, r]);
+          l = nextL;
+          r = nextR;
+      } else {
+          r = Math.max(r, nextR);
+      }
+      pos++;
+  }
+  return result;
+}
+
+const part2 = (data: string) => {
+    const { seeds, convertersDescr } = parseInput(data);
+
+    const ranges: Array<[number, number]> = [];
+    for (let i = 0; i < seeds.length; i += 2) {
+        ranges.push([seeds[i], seeds[i] + seeds[i + 1] - 1]);
+    }
+    return transform(ranges, convertersDescr);
 }
 
 export const solve: Solution = (source) => {
