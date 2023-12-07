@@ -50,27 +50,29 @@ let getTypeWithJoker = (hand: string): Type => {
   for (let i=0; i<hand.length; i++) {
     counter[hand[i]] = (counter[hand[i]] ?? 0) + 1;
   }
-  const cards = Object.entries(counter);
+  let J = counter['J'] ?? 0;
+  delete counter['J'];
+  const cards = Object.values(counter);
   
-  if (cards.find(([t, c]) => c + counter['J'] >= 5)) {
+  if (J == 5 || cards.find(c => c + J == 5)) {
     return Type.FIVE_OF_A_KIND;
   }
   
-  if (cards.find(([t, c]) => c == 4 || c == 3 && counter['J'] == 1 || c == 2 && t != 'J' && counter['J'] == 2 || counter['J'] == 3)) {
+  if (cards.find(c => c + J == 4)) {
     return Type.FOUR_OF_A_KIND;
   }
 
-  if (cards.length == 2 || cards.length == 3 && counter['J'] == 1) {
+  if (cards.length == 2) {
     return Type.FULL_HOUSE;
   }
-  if (cards.find(([t, c]) => c == 3 || c == 2 && t == 'J' || c == 2 && t != 'J' && counter['J'] == 1)) {
+  if (J >= 2 || cards.find(c => c + J == 3)) {
     return Type.THREE_OF_A_KIND;
   }
 
-  if (cards.find(([t, c]) => (c == 2 && cards.length == 3) || (c == 2 && t != 'J' && counter['J'] == 1))) {
+  if (cards.length - J == 3 && cards.find(c => c == 2)) {
     return Type.TWO_PAIR;
   }
-  if (cards.find(([t, c]) => c == 2 || t == 'J')) {
+  if (J == 1 || cards.find(c => c == 2)) {
     return Type.ONE_PAIR;
   }
   return Type.HIGH_CARD;
