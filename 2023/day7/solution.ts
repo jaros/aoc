@@ -50,10 +50,9 @@ let getTypeWithJoker = (hand: string): Type => {
   for (let i=0; i<hand.length; i++) {
     counter[hand[i]] = (counter[hand[i]] ?? 0) + 1;
   }
-  let counts = Object.values(counter);
   const cards = Object.entries(counter);
   
-  if (cards.find(([t, c]) => c == 5 || c == 4 && counter['J'] == 1 || c == 3 && t != 'J' && counter['J'] == 2 || c == 2 && t != 'J' && counter['J'] == 3 || counter['J'] == 4)) {
+  if (cards.find(([t, c]) => c + counter['J'] >= 5)) {
     return Type.FIVE_OF_A_KIND;
   }
   
@@ -61,20 +60,14 @@ let getTypeWithJoker = (hand: string): Type => {
     return Type.FOUR_OF_A_KIND;
   }
 
-  let orignalFH = counts.includes(3) && counts.includes(2);
-  let twoPairWithJoker = counts.length == 3 && counter['J'] == 1;
-  let threeAndTwoJokers = cards.find(([t, c]) => (c == 3 && t != 'J' && counter['J'] == 2))
-  let fullHouse = orignalFH || twoPairWithJoker || threeAndTwoJokers;
-  
-  if (fullHouse) {
+  if (cards.length == 2 || cards.length == 3 && counter['J'] == 1) {
     return Type.FULL_HOUSE;
   }
   if (cards.find(([t, c]) => c == 3 || c == 2 && t == 'J' || c == 2 && t != 'J' && counter['J'] == 1)) {
     return Type.THREE_OF_A_KIND;
   }
 
-  let twoPair = cards.find(([t, c]) => (c == 2 && cards.length == 3) || (c == 2 && t != 'J' && counter['J']));
-  if (twoPair) {
+  if (cards.find(([t, c]) => (c == 2 && cards.length == 3) || (c == 2 && t != 'J' && counter['J'] == 1))) {
     return Type.TWO_PAIR;
   }
   if (cards.find(([t, c]) => c == 2 || t == 'J')) {
@@ -106,11 +99,13 @@ let getInput = (data: string): Input => {
   });
 }
 
+let countScore = (input: Input): number => input.map((val, idx) => val.bid * (idx + 1)).reduce(sum);
+
 const part1 = (data: string) => {
   let cardsStrength = 'A, K, Q, J, T, 9, 8, 7, 6, 5, 4, 3, 2'.split(', ');
   let input: Input = getInput(data);
   input.sort(compareByTypeAndStrength(cardsStrength, getSimpleType));
-  return input.map((val, idx) => val.bid * (idx + 1)).reduce(sum);
+  return countScore(input);
 }
 
 const part2 = (data: string) => {
@@ -119,7 +114,7 @@ const part2 = (data: string) => {
   
   input.sort(compareByTypeAndStrength(cardsStrength, getTypeWithJoker));
 
-  return input.map((val, idx) => val.bid * (idx + 1)).reduce(sum);
+  return countScore(input);
 }
 //249817836
 
