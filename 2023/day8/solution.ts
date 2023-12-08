@@ -58,11 +58,9 @@ const part2 = (data: string) => {
     return s;
   });
   
-// Find lowest common multiple of all loop lengths
-  let lcm = steps[0];
+// Find lowest common multiple of all steps
   for (let i = 1; i < steps.length; i++) {
-      const loop = steps[i];
-      lcm = (lcm * loop) / gcd(lcm, loop);
+      steps[i] = (steps[i-1] * steps[i]) / gcd(steps[i-1], steps[i]);
   }
   return steps[steps.length - 1];
 }
