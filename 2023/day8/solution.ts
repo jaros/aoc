@@ -20,7 +20,6 @@ let parseInput = (data: string): Input => {
   Object.fromEntries(mapS.split("\n").map(line => {
     let [key, leftRight] = line.split(" = ");
     let [L, R] = leftRight.substring(1, leftRight.length - 1).split(", ");
-    // let dirs = line.split(/[^A-Z]/);
     return [key, {L, R}];
   }));
   return {instructions, map};
@@ -38,25 +37,40 @@ const part1 = (data: string) => {
   return step;
 }
 
+const gcd = (a: number, b: number): number => {
+  if (b === 0) {
+      return a;
+  }
+  return gcd(b, a % b);
+}
+
 const part2 = (data: string) => {
   let {instructions, map} = parseInput(data);
-  console.log(map)
   let isEnd = (key: string) => key.endsWith('Z');
   let positions = Object.keys(map).filter(key => key.endsWith('A'));
-  let step = 0;
-  console.log(positions)
-  while (!positions.every(isEnd)) {
-    let inst = instructions[step % instructions.length];
-    positions = positions.map(pos => map[pos][inst]);
-    step++;
+  let steps = positions.map(pos => {
+    let s = 0;
+    while (!isEnd(pos)) {
+      let inst = instructions[s % instructions.length];
+      pos = map[pos][inst]
+      s++;
+    }
+    return s;
+  });
+  
+// Find lowest common multiple of all loop lengths
+  let lcm = steps[0];
+  for (let i = 1; i < steps.length; i++) {
+      const loop = steps[i];
+      lcm = (lcm * loop) / gcd(lcm, loop);
   }
-
-  return step;
+  return steps[steps.length - 1];
 }
+
 
 export const solve: Solution = (source) => {
   title("Day 8: Haunted Wasteland");
   const data = readInput(source, import.meta.dir)
-  // withTime(part1)(data);
+  withTime(part1)(data);
   withTime(part2)(data);
 };
