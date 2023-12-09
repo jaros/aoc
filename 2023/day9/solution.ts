@@ -8,25 +8,36 @@ const parseInput = (data: string) : number[][] => {
 
 let allZeros = (nums: number[]) => nums.every(n => n == 0);
 
-let findNextNum = (nums: number[]): number => {
+let findNextSeq = (nums: number[]): number[] => {
   let nextSeq = [];
   for (let i=1; i < nums.length; i++) {
     nextSeq.push(nums[i] - nums[i-1]);
   }
-  // console.log(nextSeq)
+  return nextSeq;
+}
+
+let findNextNum = (nums: number[]): number => {
+  let nextSeq = findNextSeq(nums);
   if (allZeros(nextSeq)) {
     return nums[nums.length-1];
   }
   return nums[nums.length-1] + findNextNum(nextSeq);
 }
 
+let findPrevNum = (nums: number[]): number => {
+  let nextSeq = findNextSeq(nums);
+  if (allZeros(nextSeq)) {
+    return nums[nums.length-1];
+  }
+  return nums[0] - findPrevNum(nextSeq);
+}
+
 const part1 = (data: string) => {
-  let rows = parseInput(data);
-  return rows.map(findNextNum).reduce(sum);
+  return parseInput(data).map(findNextNum).reduce(sum);
 }
 
 const part2 = (data: string) => {
-  return 0;
+  return parseInput(data).map(findPrevNum).reduce(sum);
 }
 
 
