@@ -16,28 +16,26 @@ let findNextSeq = (nums: number[]): number[] => {
   return nextSeq;
 }
 
-let findNextNum = (nums: number[]): number => {
-  let nextSeq = findNextSeq(nums);
-  if (allZeros(nextSeq)) {
-    return nums[nums.length-1];
+let findRightNum = (nums: number[]): number => {
+  while (!allZeros(nums)) {
+    return nums[nums.length-1] + findRightNum(findNextSeq(nums));  
   }
-  return nums[nums.length-1] + findNextNum(nextSeq);
+  return nums[0];
 }
 
-let findPrevNum = (nums: number[]): number => {
-  let nextSeq = findNextSeq(nums);
-  if (allZeros(nextSeq)) {
-    return nums[nums.length-1];
+let findLeftNum = (nums: number[]): number => {
+  while (!allZeros(nums)) {
+    return nums[0] - findLeftNum(findNextSeq(nums));  
   }
-  return nums[0] - findPrevNum(nextSeq);
+  return nums[0];
 }
 
 const part1 = (data: string) => {
-  return parseInput(data).map(findNextNum).reduce(sum);
+  return parseInput(data).map(findRightNum).reduce(sum);
 }
 
 const part2 = (data: string) => {
-  return parseInput(data).map(findPrevNum).reduce(sum);
+  return parseInput(data).map(findLeftNum).reduce(sum);
 }
 
 
