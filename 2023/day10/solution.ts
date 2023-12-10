@@ -161,20 +161,19 @@ let getAreaMap = (
   const loopTiles = new Set<string>(loop.map(({i, j}) => `${i}:${j}`));
   const loopEdges: Array<[number, number, number, number]> = [];
 
-  const lines = parseInput(input);
+  const originalArea = parseInput(input);
 
-  const result: string[][] = [];
+  const cleanedArea: string[][] = [];
 
-  for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const l: string[] = [];
+  for (let i = 0; i < originalArea.length; i++) {
+      const row = originalArea[i];
+      const r: string[] = [];
 
-      for (let j = 0; j < line.length; j++) {
-          const char = loopTiles.has(`${i}:${j}`) ? line[j] : '.';
-          l.push(char);
+      for (let j = 0; j < row.length; j++) {
+          r.push(loopTiles.has(`${i}:${j}`) ? row[j] : '.');
       }
 
-      result.push(l);
+      cleanedArea.push(r);
   }
 
   let prev = loop[loop.length - 1];
@@ -188,7 +187,7 @@ let getAreaMap = (
       prev = next;
   }
 
-  return [result, loopEdges];
+  return [cleanedArea, loopEdges];
 }
 
 let insideLoopTiles = (
