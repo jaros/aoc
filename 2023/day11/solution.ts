@@ -8,25 +8,29 @@ const getGrid = (data: string) : string[][] => {
 
 type Loc = [number, number];
 
-const part1 = (data: string) => {
-  // console.log(data)
-  let grid = getGrid(data);
-  let doubledRows = new Set<number>();
-  let doubledCols = new Set<number>();
+const findNoGalaxiesAreas = (grid: string[][]) => {
+  let freeRows = new Set<number>();
+  let freeCols = new Set<number>();
 
   for (let i=0; i < grid.length; i++) {
     if (grid[i].every(c => c == '.')) {
-      doubledRows.add(i);
+      freeRows.add(i);
     }
   }
 
-  let cols = [];
   for (let j = 0; j < grid[0].length; j++) {
-    cols.push(grid.map(row => row[j]));
-    if (cols[j].every(r => r == '.')) {
-      doubledCols.add(j);
+    let col = grid.map(row => row[j]);
+    if (col.every(r => r == '.')) {
+      freeCols.add(j);
     }
   }
+  return {freeRows, freeCols};
+}
+
+const getDistancsOfExpandingUniverse = (data: string, expansion: number) => {
+  let grid = getGrid(data);
+
+  let {freeRows, freeCols} = findNoGalaxiesAreas(grid);
 
   let galaxies: Array<Loc> = [];
   for (let i=0; i < grid.length; i++) {
@@ -36,8 +40,6 @@ const part1 = (data: string) => {
       }
     }
   }
-  console.log(galaxies.length)
-
   // find pairs
   let pairs: Array<[Loc, Loc]> = [];
   for (let n = 0; n < galaxies.length; n++) {
@@ -45,8 +47,6 @@ const part1 = (data: string) => {
       pairs.push([galaxies[m], galaxies[n]]);
     }
   }
-  console.log(pairs.length)
-
   let distances: number[] = []
   for (let [from, to] of pairs) {
     let [i1, j1] = from;
@@ -62,16 +62,18 @@ const part1 = (data: string) => {
     let j = jStart;
     while(i < iEnd) {
       i++;
-      steps++;
-      if (doubledRows.has(i)) {
+      if (freeRows.has(i)) {
+        steps += (1 * expansion);
+      } else {
         steps++;
       }
     }
 
     while(j < jEnd) {
       j++;
-      steps++;
-      if (doubledCols.has(j)) {
+      if (freeCols.has(j)) {
+        steps += (1 * expansion);
+      } else {
         steps++;
       }
     }
@@ -80,8 +82,13 @@ const part1 = (data: string) => {
   return distances.reduce(sum);
 }
 
+const part1 = (data: string) => {
+  // console.log(data)
+  return getDistancsOfExpandingUniverse(data, 2);
+}
+
 const part2 = (data: string) => {
-  return 0;
+  return getDistancsOfExpandingUniverse(data, 1000000);
 }
 
 
