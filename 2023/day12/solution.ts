@@ -23,12 +23,11 @@ const getWaysAt = (records: string[], groups: number[], inCurrGroupCount: number
   // console.log('groupsSum', groupsSum, 'isOver', isOver, 'inCurrGroupCount', inCurrGroupCount)
   if (isOver) {
     if (groupsSum == 0) {
-      // console.log('is over', records);
+      // console.log('%', records);
       return 1;
     } else {
       return 0;
     }
-    // return (groupsSum == 0 ) ? 1 : 0;
   }
   
   let curr = records[idx];
@@ -46,11 +45,14 @@ const getWaysAt = (records: string[], groups: number[], inCurrGroupCount: number
 
   if (curr == '#') { // either starting the group or just continous counting elements in group
     let count = inCurrGroupCount + 1;
+    if (groups.length == 0) { // no more groups
+      return 0;
+    }
     if (count > groups[0]) {
       return 0;
     }
     if (count == groups[0] && groups.length == 1 && idx == records.length - 1) {
-      // console.log('last #', records)
+      // console.log('#', records)
       return 1;
     }
     if (count == 1 && prev == '#') {
@@ -76,11 +78,6 @@ const getWays = (row: Row): number => {
 }
 
 const part1 = (data: string) => {
-  // console.log(data)
-  // let rows = getRows(data);
-  // let row = rows[rows.length - 1]; // rows.length - 1
-  // console.log(row)
-  // return getWays(row);
   let ways = getRows(data).map(getWays);
   // console.log(ways)
   return ways.reduce(sum);
@@ -88,8 +85,41 @@ const part1 = (data: string) => {
 
 // 8916 - answer is too high
 // 8212 - answer is too high
+// 7716 - ok
 const part2 = (data: string) => {
-  return 0;
+  let rows = getRows(data);
+  let rr: Row[] = rows.map(r => {
+    let records: string[] = [];
+    let groups: number[] = [];
+    for (let i = 0; i < 5; i++) {
+      records.push(...r.records);
+      if (i < 4) {
+        records.push('?');
+      }
+      groups.push(...r.groups);
+    }
+    return {
+      records,
+      groups
+    };
+  });
+  // let first = rr[0];
+  // console.log(first.records.join(''))
+  // console.log(first.groups.join(','))
+  // let w= getWays(first);
+  // console.log(w)
+  // return w;
+
+  // let ways = rr.map(getWays);
+  let s = 0;
+  for (let i = 9; i < 10; i++) {
+    console.log(rr[i].records.join(""));
+    console.log(rr[i].groups.join(","));
+    let w = getWays(rr[i]);
+    s += w;
+    console.log(i, w, s);
+  }
+  return s;
 }
 
 
