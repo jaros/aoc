@@ -1,5 +1,5 @@
 
-import { Solution, readInput, title } from "../../common/types";
+import { Solution, Source, readInput} from "../../common/types";
 
 type Bill = {
   utilities: number,
@@ -38,3 +38,6 @@ export const solve: Solution = (source) => {
   const data = readInput(source, import.meta.dir)
   console.log(formatBills(data.split('\n'), false));
 };
+
+
+solve(Source.INPUT)
