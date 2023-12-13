@@ -7,106 +7,97 @@ type Row = {
   groups: number[];
 }
 
-const parseData = (data: string): string[] => {
-  return data.split('\n\n');
+const parseData = (data: string): string[][][] => {
+  return data.split('\n\n').map(c => c.split('\n').map(r => r.split('')));
 }
 
-let findVerticalMiddle = (cluster: string) => {
-  let rows = cluster.split('\n');
-  let columns = [];
-  for (let j = 0; j < rows[0].length; j++) {
-    columns.push(rows.map(r => r[j]).join(''));
-  }
-  let len = columns.length;
-
+let findSymmetricsCenter = (grid: string[][], diff = 0) => {
+  let len = grid.length;
   let l = 0;
   while (l < len-1) {
     let k = 0;
-    let noMirror = false;
+    let d = 0;
     while (l-k >= 0 && l+k+1 < len) {
-      let left = columns[l-k];
-      let right = columns[l+k+1];
-      // console.log(left);
-      // console.log(right);
+      let left = grid[l-k];
+      let right = grid[l+k+1];
       for (let i = 0; i < left.length; i++) {
         if (left[i] !== right[i]) {
-          noMirror = true;
-          break;
+          d++;
         }
-      }
-      if (noMirror) {
-        // console.log(l, k);
-        break;
       }
       k++;
     }
-    if (!noMirror) {
+    if (d == diff) {
       return l + 1;
     }
     l++;
   }
-  // throw new Error('No vertical mirror found');
   return -1;
 }
 
-let findHorizontalMiddle = (cluster: string) => {
-  let rows = cluster.split('\n');
-  
-  let len = rows.length;
-
-  let t = 0;
-  while (t < len-1) {
-    let k = 0;
-    let noMirror = false;
-    while (t-k >= 0 && t+k+1 < len) {
-      let top = rows[t-k];
-      let bottom = rows[t+k+1];
-      // console.log(top);
-      // console.log(bottom);
-      for (let i = 0; i < top.length; i++) {
-        if (top[i] !== bottom[i]) {
-          noMirror = true;
-          break;
-        }
-      }
-      if (noMirror) {
-        // console.log(t, k);
-        break;
-      }
-      k++;
-    }
-    if (!noMirror) {
-      return t + 1;
-    }
-    t++;
-  }
-  // throw new Error('No horizontal mirror found');
-  return -1;
-}
+const transpose = (m: string[][]) => m[0].map((_, i) => m.map((x) => x[i]));
 
 const part1 = (data: string) => {
-  let clusters = parseData(data);
+  let clusters: string[][][] = parseData(data);
 
   let total = 0;
   for (let cluster of clusters) {
-    let leftCols = findVerticalMiddle(cluster);  
+    let leftCols = findSymmetricsCenter(cluster);  
     if (leftCols > -1) {
-      total += leftCols;
+      total += (leftCols * 100);
     }
 
-    let topRows = findHorizontalMiddle(cluster);  
+    let topRows = findSymmetricsCenter(transpose(cluster));
     if (topRows > -1) {
-      total += (topRows * 100);
+      total += topRows;
     }
   }
   return total;
 }
 
+const findReflection = (grid: string[][], diff: number) => {
+  let len = grid.length;
+  let l = 0;
+
+  while (l < len - 1) {
+    let d = 0;
+    let k = 0;
+
+    while (k < len) {
+      let left = grid[k];
+      let tI = 2*l - k + 1 ;
+      if (tI >= 0 && tI < len) {
+        let right = grid[tI];
+        for (let i = 0; i < left.length; i++) {
+          if (left[i] !== right[i]) {
+            d++;
+          }
+        }
+      }
+      k++;
+    }
+    if (d === diff) {
+      return l + 1;
+    }
+    l++;
+  }
+  return 0;
+};
+
+const findScore = (grid: string[][], diff: number) => {
+  const row = findReflection(grid, diff);
+  const col = findReflection(transpose(grid), diff);
+  return row ? 100 * row : col;
+};
+
 const part2 = (data: string) => {
   let clusters = parseData(data);
-  return clusters.length;
+  let total = 0;
+  for (let cluster of clusters) {
+    total += findScore(cluster, 2);
+  }
+  return total;
 }
-
 
 export const solve: Solution = (source) => {
   title("Day 13: Point of Incidence");
