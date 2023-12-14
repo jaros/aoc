@@ -8,30 +8,52 @@ const parseData = (data: string): string[] => {
 const transpose = (lines: string[]): string[] => lines[0].split('').map((_, i) => lines.map((x) => x[i]).join(''));
 
 let moveStones = (row: string): string => row
-.split('#')
-.map(group => group.split('').sort().reverse().join(''))
-.join('#')
+      .split('#')
+      .map(group => group.split('').sort().reverse().join(''))
+      .join('#')
+
+let countWeight = (grid: string[]) => grid
+  .map((row, i) => row.split('').filter(c => c == 'O').length * (grid.length - i))
+  .reduce((a, b) => a + b, 0);
 
 const part1 = (data: string) => {
   let m = parseData(data);
   let cols = transpose(m);
   let moved = cols.map(moveStones);
   let originalView = transpose(moved);
+  return countWeight(originalView);
+}
 
-  let total = 0;
-  for (let i=0; i < originalView.length; i++) {
-    let row = originalView[i]
-    let sum = row.split('').filter(c => c == 'O').length * (originalView.length - i);
-    total += sum;
+let cycle = (grid: string[]) => {
+  for (let i = 0; i < 4; i++) {
+    grid = transpose(grid);
+    grid = grid.map(moveStones);
+    grid = grid.map((row) => row.split("").reverse().join(""));
   }
-  return total;
+  return grid;
 }
 
 const part2 = (data: string) => {
-  let m = parseData(data);
-  
-  let total = 0;
-  return total;
+  let grid = parseData(data);
+  let key: string = grid.join('-');
+  let seen = new Set([key]);
+  let arr = [key];
+
+  let i = 0;
+  while (true) {
+    i++;
+    grid = cycle(grid);
+    key = grid.join('-');
+    if (seen.has(key)) {
+      break;
+    }
+    seen.add(key);
+    arr.push(key);
+  }
+
+  let begin = arr.indexOf(key);
+  grid = arr[(1000000000 - begin) % (i - begin) + begin].split('-');
+  return countWeight(grid);
 }
 
 export const solve: Solution = (source) => {
