@@ -1,62 +1,35 @@
 
 import { Solution, readInput, title, withTime } from "../../common/types";
 
-const parseData = (data: string): string[][] => {
-  return data.split('\n').map(c => c.split(''));
+const parseData = (data: string): string[] => {
+  return data.split('\n');
 }
 
-const transpose = (m: string[][]) => m[0].map((_, i) => m.map((x) => x[i]));
+const transpose = (lines: string[]): string[] => lines[0].split('').map((_, i) => lines.map((x) => x[i]).join(''));
 
-
-let getLoad = (col: string[]): number => {
-  let total = 0;
-  let len = col.length;
-  let beforeEmptyCells = 0;
-  for (let i=0; i < len; i++) {
-    if (col[i] == '#') {
-      beforeEmptyCells = 0;
-    } else if (col[i] == '.') {
-      beforeEmptyCells++;
-    } else if (col[i] == 'O') {
-      let weight = len - i + beforeEmptyCells;
-      total += weight; 
-    }
-
-  }
-
-  return total;
-}
+let moveStones = (row: string): string => row
+.split('#')
+.map(group => group.split('').sort().reverse().join(''))
+.join('#')
 
 const part1 = (data: string) => {
   let m = parseData(data);
   let cols = transpose(m);
+  let moved = cols.map(moveStones);
+  let originalView = transpose(moved);
+
   let total = 0;
-  for (let i=0; i < cols.length; i++) {
-    total += getLoad(cols[i]);
+  for (let i=0; i < originalView.length; i++) {
+    let row = originalView[i]
+    let sum = row.split('').filter(c => c == 'O').length * (originalView.length - i);
+    total += sum;
   }
   return total;
-}
-
-type Cell = {
-  x: number;
-  y: number;
-  val: string;
 }
 
 const part2 = (data: string) => {
   let m = parseData(data);
   
-  let matrix: Cell[] = [];
-  for (let i=0; i < m.length; i++) {
-    for (let j=0; j < m.length; j++) {
-      matrix.push({
-        x: i,
-        y: j,
-        val: m[i][j]
-      });
-    }
-  }
-
   let total = 0;
   return total;
 }
