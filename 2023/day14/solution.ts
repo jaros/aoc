@@ -1,5 +1,6 @@
 
 import { Solution, readInput, title, withTime } from "../../common/types";
+import { count } from "../utils";
 
 const parseData = (data: string): string[] => {
   return data.split('\n');
@@ -13,7 +14,7 @@ let moveStones = (row: string): string => row
       .join('#')
 
 let countWeight = (grid: string[]) => grid
-  .map((row, i) => row.split('').filter(c => c == 'O').length * (grid.length - i))
+  .map((row, i) => count(row, 'O') * (grid.length - i))
   .reduce((a, b) => a + b, 0);
 
 const part1 = (data: string) => {
