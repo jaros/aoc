@@ -37,13 +37,27 @@ const part1 = (data: string) => {
   return total;
 }
 
+type Cell = {
+  x: number;
+  y: number;
+  val: string;
+}
+
 const part2 = (data: string) => {
   let m = parseData(data);
-  let cols = transpose(m);
-  let total = 0;
-  for (let i=0; i < cols.length; i++) {
-    total += getLoad(cols[i]);
+  
+  let matrix: Cell[] = [];
+  for (let i=0; i < m.length; i++) {
+    for (let j=0; j < m.length; j++) {
+      matrix.push({
+        x: i,
+        y: j,
+        val: m[i][j]
+      });
+    }
   }
+
+  let total = 0;
   return total;
 }
 
