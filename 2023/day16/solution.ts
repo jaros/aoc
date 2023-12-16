@@ -4,9 +4,10 @@ import { sum } from "../utils";
 
 let getGrig = (data: string): string[][] => data.split('\n').map(line => line.split(''));
 
-const part1 = (data: string) => {
-  let grid = getGrig(data);
-  let vector = [0, -1, 0, 1]; // r, c, dr, dc
+let grid: string[][] = [];
+
+let calc = (r: number, c: number, dr: number, dc: number) => {
+  let vector = [r, c, dr, dc]; // r, c, dr, dc
   let seen = new Set<string>();
   let q = [vector];
 
@@ -65,8 +66,23 @@ const part1 = (data: string) => {
   return coords.size
 }
 
+const part1 = (data: string) => {
+  grid = getGrig(data);
+  return calc(0, -1, 0, 1);
+}
+
 const part2 = (data: string) => {
-  return 0;
+  grid = getGrig(data);
+  let maxEnergy = 0;
+  for (let r=0; r < grid.length; r++) {
+    maxEnergy = Math.max(maxEnergy, calc(r, -1, 0, 1))
+    maxEnergy = Math.max(maxEnergy, calc(r, grid[0].length, 0, -1))
+  }
+  for (let c=0; c < grid[0].length; c++) {
+    maxEnergy = Math.max(maxEnergy, calc(-1, c, 1, 0))
+    maxEnergy = Math.max(maxEnergy, calc(grid.length, c, -1, 0))
+  }
+  return maxEnergy;
 }
 
 export const solve: Solution = (source) => {
