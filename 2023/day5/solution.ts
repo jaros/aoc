@@ -1,164 +1,80 @@
 
 import { Solution, readInput, title, withTime } from "../../common/types";
-import { min } from "../utils";
 
-type MapConvert = {
-  dst: number;
-  src: number;
-  size: number;
-}
-
-type ConverterDescription = {
-  title: string;
-  mapConverters: MapConvert[];
-}
-
-type GardenInput = {
-  seeds: number[];
-  convertersDescr: ConverterDescription[];
-}
-
-const parseInput = (data: string): GardenInput => {
-  let [seedBlock, ...mapBlocks] = data.split("\n\n");
-  let seeds = seedBlock.split(": ")[1].split(" ").map(Number);
-  let convertersDescr = mapBlocks.map<ConverterDescription>(convert => {
-    let [title, ...convs] = convert.split("\n");
-    let mapConverters = convs.map<MapConvert>(conv => {
-      let [destStart, sourceStart, rangeLength] = conv.split(" ").map(Number);
-      return { dst: destStart, src: sourceStart, size: rangeLength };
-    });
-    return { title, mapConverters }
-  });
-  return { seeds, convertersDescr };
+const getRanges = (block: string): number[][] => {
+  let ranges = [];
+    let blokLines = block.split("\n");
+    for (let i=1; i < blokLines.length; i++) {
+      let range = blokLines[i].split(" ").map(Number);
+      ranges.push(range);
+    }
+    return ranges;
 }
 
 const part1 = (data: string) => {
-  let input = parseInput(data);
-  // console.log(JSON.stringify(input, null, 2))
+  let [seedsStr, ...blocks] = data.split("\n\n");
 
-  let findDest = (source: number, maps: MapConvert[]): number => {
-    for (let map of maps) {
-      let end = map.src + map.size;
-      if (source >= map.src && source < end) {
-        return source + (map.dst - map.src);
+  let seeds = seedsStr.split(":")[1].trim().split(" ").map(Number);
+  
+  for (let block of blocks) {
+    let ranges = getRanges(block);
+    let newSeeds = [];
+    for (let x of seeds) {
+      let mapped = false;
+      for (let [a, b, c] of ranges) {
+        if (b <= x && x < b + c) {
+          newSeeds.push(x - b + a);
+          mapped = true;
+          break;
+        }
+      }
+      if (!mapped) {
+        newSeeds.push(x);
       }
     }
-    return source;
+    seeds = newSeeds;
   }
-
-  let maps: Record<number, number>[] = [];
-  for (let i = 0; i < input.convertersDescr.length; i++) {
-    let descr = input.convertersDescr[i];
-    let sources = i == 0 ? input.seeds : Object.values(maps[i - 1]);
-    let currentMapping: Record<number, number> = {};
-    for (let source of sources) {
-      let dest = findDest(source, descr.mapConverters);
-      currentMapping[source] = dest;
-    }
-    // console.log("currentMapping", currentMapping);
-    maps.push(currentMapping);
-  }
-
-  // lowest location
-  return Math.min(...Object.values(maps[maps.length - 1]));
-}
-
-const applyMappings = (
-  ranges: Array<[number, number]>,
-  maps: ConverterDescription[]
-): Array<[number, number]> => {
-  for (const map of maps) {
-      const match: Array<[number, number]> = [];
-      let remains: Array<[number, number]> = [...ranges];
-      for (const {dst, src, size} of map.mapConverters) {
-          const newRemains: Array<[number, number]> = [];
-          for (const range of remains) { // upstream
-              const transit = intersect(
-                  range,
-                  [src, src + size - 1],
-                  dst - src
-              );
-              match.push(...transit.match);
-              newRemains.push(...transit.remains); // remains is what not found in mapping - remains equal to source
-          }
-          remains = mergeOverlappingRanges(newRemains);
-      }
-      ranges = mergeOverlappingRanges([...match, ...remains]);
-  }
-
-  return ranges;
-}
-
-const intersect = (
-  a: [number, number], // 30, 31
-  b: [number, number], // 20, 30
-  offset: number
-): { match: Array<[number, number]>; remains: Array<[number, number]> } => {
-  if (a[1] < b[0] || a[0] > b[1]) {
-    // console.log("source doesn't overlap with range") 
-    return {
-          match: [],
-          remains: [a]
-      };
-  } else if (a[0] < b[0] && a[1] > b[1]) {
-    // console.log("source covers range") 
-    return {
-          match: [[b[0] + offset, b[1] + offset]],
-          remains: [
-            [a[0], b[0] - 1],
-            [b[1] + 1, a[1]]
-          ]
-      };
-  } else if (a[0] >= b[0] && a[1] <= b[1]) {
-    // console.log("source inside range")
-      return {
-          match: [[a[0] + offset, a[1] + offset]],
-          remains: []
-      };
-  } else if (a[0] < b[0]) {
-    // console.log("source intersects by right side")
-      return {
-          match: [[b[0] + offset, a[1] + offset]],
-          remains: [[a[0], b[0] - 1]]
-      };
-  } else {
-    // console.log("source intersects by left side")
-      return {
-          match: [[a[0] + offset, b[1] + offset]],
-          remains: [[b[1] + 1, a[1]]]
-      };
-  }
-}
-
-const mergeOverlappingRanges = (ranges: Array<[number, number]>) => {
-  if (ranges.length < 2) {
-      return ranges;
-  }
-  ranges.sort((a, b) => (a[0] < b[0] ? -1 : 1));
-  const result: Array<[number, number]> = [];
-  let [first, ...restRanges] = ranges;
-  let [l, r] = first;
-  for (let [nextL, nextR] of restRanges) {
-    if (r < nextL) {
-      result.push([l, r]);
-      l = nextL;
-      r = nextR;
-    } else {
-      r = Math.max(r, nextR);
-    }
-  }
-  result.push([l, r]);
-  return result;
+  return Math.min(...seeds);
 }
 
 const part2 = (data: string) => {
-    const { seeds, convertersDescr } = parseInput(data);
+  let [inputsStr, ...blocks] = data.split("\n\n");
 
-    const ranges: Array<[number, number]> = [];
-    for (let i = 0; i < seeds.length; i += 2) {
-        ranges.push([seeds[i], seeds[i] + seeds[i + 1] - 1]);
+  let inputs = inputsStr.split(":")[1].trim().split(" ").map(Number);
+  let seeds: number[][] = [];
+
+  for (let i=0; i < inputs.length; i += 2) {
+    seeds.push([inputs[i], inputs[i] + inputs[i+1]]);
+  }
+
+  for (let block of blocks) {
+    let ranges = getRanges(block);
+    let newSeeds = [];
+    while (seeds.length > 0) {
+      let [start, end] = seeds.pop()!;
+      let mapped = false;
+      for (let [a, b, c ] of ranges) {
+        let overlapStart = Math.max(start, b);
+        let overlapEnd = Math.min(end, b + c);
+        if (overlapStart < overlapEnd) {
+          mapped = true;
+          newSeeds.push([overlapStart - b + a, overlapEnd - b + a]);
+          if (overlapStart > start) {
+            seeds.push([start, overlapStart]);
+          }
+          if (end > overlapEnd) {
+            seeds.push([overlapEnd, end]);
+          }
+          break;
+        }
+      }
+      if (!mapped) {
+        newSeeds.push([start, end]);
+      }
     }
-    return applyMappings(ranges, convertersDescr).map(range => range[0]).reduce(min);
+    seeds = newSeeds;
+  }
+  return Math.min(...seeds.flat());
 }
 
 export const solve: Solution = (source) => {
