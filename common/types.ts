@@ -10,6 +10,8 @@ export enum Source {
 
 export const readInput = (source: Source, dir: string) => readFileSync(path.resolve(dir, source), "utf-8");
 
+export const readInputFile = () => readFileSync(process.argv[2] == 'test' ? Source.TEST : Source.INPUT, "utf-8");
+
 export const title = (header: string) => console.error(`${header}\n`)
 
 export const withTime = <A extends any[], R>(f: (...a: A) => R) => (
