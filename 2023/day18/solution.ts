@@ -20,9 +20,6 @@ const part1 = (data: string) => {
     let [r, c] = points[points.length - 1];
     points.push([r + dx * n, c + dy * n]);
   }
-
-  // console.log( points.length, (-1 + points.length) % points.length, points[(-1 + points.length) % points.length]);
-
   let sum = 0;
   for (let i = 0; i < points.length - 1; i++) {
     sum += points[i][0] * (points[(i-1 + points.length) % points.length][1] - points[(i+1) % points.length][1]) 
@@ -35,12 +32,34 @@ const part1 = (data: string) => {
 }
 
 const part2 = (data: string) => {
-  return 0;
+  let points = [[0, 0]];
+
+  let b=0; // boundary points
+  for (let line of data.split('\n')) {
+    let [_d, _s, x] = line.trim().split(' ');
+    x = x.slice(2, x.length-1);
+    let dir = "RDLU".charAt(Number(x.charAt(x.length-1)));
+    let [dx, dy] = dirs[dir];
+    let hexMoves = x.slice(0, x.length-1);
+    let n = Number.parseInt(hexMoves, 16);
+    b += n;
+    
+    let [r, c] = points[points.length - 1];
+    points.push([r + dx * n, c + dy * n]);
+  }
+  let sum = 0;
+  for (let i = 0; i < points.length - 1; i++) {
+    sum += points[i][0] * (points[(i-1 + points.length) % points.length][1] - points[(i+1) % points.length][1]) 
+  }
+  let A = Math.abs(sum) / 2;
+  let i = A - b/2 + 1;
+
+  return i + b;
 }
 
 export const solve: Solution = (source) => {
   title("Day 18: Lavaduct Lagoon");
   const data = readInput(source, import.meta.dir)
   withTime(part1)(data);
-  // withTime(part2)(data);
+  withTime(part2)(data);
 };
