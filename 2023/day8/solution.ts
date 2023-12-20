@@ -1,5 +1,6 @@
 
 import { Solution, readInput, title, withTime } from "../../common/types";
+import { gcd } from "../utils";
 
 type Element = {
   L: string;
@@ -35,13 +36,6 @@ const part1 = (data: string) => {
     step++;
   }
   return step;
-}
-
-const gcd = (a: number, b: number): number => {
-  if (b === 0) {
-      return a;
-  }
-  return gcd(b, a % b);
 }
 
 const part2 = (data: string) => {
