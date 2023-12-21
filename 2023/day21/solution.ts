@@ -7,26 +7,13 @@ const dirs = [
   [-1, 0], // up
 ];
 
-let findStart = (grid: string[]) => {
-  for (let r=0; r < grid.length; r++) {
-    for (let c=0; c < grid[r].length; c++) {
-      if (grid[r][c] === 'S') {
-        return [r, c];
-      }
-    }
-  }
-  throw new Error('No start found');
-}
-
-let canMove = (grid: string[], dr: number, dc: number) => {
-
-}
+let encode = ([r, c]: number[]) => `${r},${c}`;
 
 const part1 = (data: string) => {
   // console.log(data);
-  const grid = data.split('\n');
+  const grid = data.split('\n').map(r => r.split(''));
 
-  let findStart = () => {
+  let findStart = (): number[] => {
     for (let r=0; r < grid.length; r++) {
       for (let c=0; c < grid[r].length; c++) {
         if (grid[r][c] === 'S') {
@@ -44,23 +31,11 @@ const part1 = (data: string) => {
     return grid[r][c] !== '#';
   }
 
-  let printGrid = (positions: number[][]) => {
-    let gridCopy = grid.map(r => r.split(''));
-    for (let [r, c] of positions) {
-      gridCopy[r][c] = 'O';
-    }
-    console.log(gridCopy.map(r => r.join('')).join('\n'));
-  }
-
   let start = findStart();
 
-  let encode = ([r, c]: number[]) => `${r},${c}`;
-  let decode = (s: string) => s.split(',').map(Number);
-
   let positions: number[][] = [start];
-  let seen: Set<string> = new Set([encode(start)]);
 
-  for (let i=0; i < 64; i++) {
+  for (let i=0; i < 6; i++) {
     let nextPositions = [];
     let seen: Set<string> = new Set();
     while (positions.length > 0) { 
