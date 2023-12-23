@@ -15,11 +15,6 @@ let decode = (p: string): Point => {
  return {r,c};
 };
 
-type Way = {
-  seen: Set<string>;
-  current: Point;
-}
-
 const steepSlopes = ['^', '>', 'v', '<'];
 const mapSlopes: Record<string, number[]> = {
   '^': [-1, 0], '>': [0, 1], 'v': [1, 0], '<': [0, -1]
@@ -51,8 +46,6 @@ const part1 = (data: string) => {
     let neighborsPaths = [];
     for (let [dr, dc] of dirs) {
       let nP = { r: current.r + dr, c: current.c + dc };
-      // let nr = current.r + dr;
-      // let nc = current.c + dc;
       let key = encode(nP);
       if (nP.r >= 0 && nP.r < len && nP.c >= 0 && nP.c < len && !path.has(key) && canMove(nP, path)) {
         let nSeen = new Set(path);
@@ -97,8 +90,6 @@ const part2 = (data: string) => {
     }
   }
 
-  // console.log(points)
-
   let graph: Record<string, Record<string, number>> = Object.fromEntries(points.map(pt => [pt, {} as Record<string, number>]));
 
   for (let pt of points) {
@@ -124,27 +115,24 @@ const part2 = (data: string) => {
       }
     }
   }
-  // console.log(graph)
-
   let seen = new Set<string>();
 
-  let dfs = (pt: Point): number => {
-    if (isFinish(pt)) {
+  let dfs = (pt: string): number => {
+    if (isFinish(decode(pt))) {
       return 0;
     }
 
     let m = Number.NEGATIVE_INFINITY;
-    let ptKey = encode(pt);
-    seen.add(ptKey)
-    for (let nx in graph[ptKey] ) {
+    seen.add(pt)
+    for (let nx in graph[pt] ) {
       if (!seen.has(nx))
-        m = Math.max(m, dfs(decode(nx)) + graph[ptKey][nx])
+        m = Math.max(m, dfs(nx) + graph[pt][nx])
     }
-    seen.delete(ptKey)
+    seen.delete(pt)
     return m;
   }
   
-  return dfs(start);
+  return dfs(encode(start));
 };
 
 export const solve: Solution = (source) => {
