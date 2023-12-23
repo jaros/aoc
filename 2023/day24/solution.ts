@@ -1,6 +1,7 @@
 import { Solution, readInput, title, withTime } from "../../common/types";
 
 const part1 = (data: string) => {
+  console.log(data)
   return 0;
 };
 
