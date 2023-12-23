@@ -1,60 +1,35 @@
 import { Solution, readInput, title, withTime } from "../../common/types";
 
-const dirs = [
-  [0, 1], // right
-  [0, -1], // left
-  [1, 0], // down
-  [-1, 0], // up
-];
-
 let encode = ([r, c]: number[]) => `${r},${c}`;
 
 const part1 = (data: string) => {
-  // console.log(data);
   const grid = data.split('\n').map(r => r.split(''));
 
-  let findStart = (): number[] => {
-    for (let r=0; r < grid.length; r++) {
-      for (let c=0; c < grid[r].length; c++) {
-        if (grid[r][c] === 'S') {
-          return [r, c];
-        }
-      }
-    }
-    throw new Error('No start found');
-  }
+  let start = grid.reduce((prev, row, rIdx) => prev[1] != -1 ? prev : [rIdx, row.findIndex(c => c == 'S')], [-1, -1]);
+  console.log(start)
+
+  let ans = new Set();
+  let seen = new Set([encode(start)]);
+  let q = [[...start, 64]];
   
-  let canMove = ([r, c]: number[]) => {
-    if (r < 0 || r >= grid.length || c < 0 || c >= grid[r].length) {
-      return false;
+  while (q.length > 0) {
+    let [r, c, s] = q.shift()!;
+    if (s % 2 == 0) {
+      ans.add(encode([r, c]))
     }
-    return grid[r][c] !== '#';
-  }
-
-  let start = findStart();
-
-  let positions: number[][] = [start];
-
-  for (let i=0; i < 6; i++) {
-    let nextPositions = [];
-    let seen: Set<string> = new Set();
-    while (positions.length > 0) { 
-      let pos = positions.pop()!;
-      for (let [dr, dc] of dirs) {
-        let next = [pos[0] + dr, pos[1] + dc];
-        let nextKey = encode(next);
-        if (canMove(next) && !seen.has(nextKey)) {
-          nextPositions.push(next);
-          seen.add(nextKey);
-        }
+    if (s == 0) {
+      continue;
+    }
+    for (let [nr, nc] of [[r+1, c], [r-1,c], [r, c+1], [r, c-1]]) {
+      let nKey = encode([nr, nc]);
+      if (nr < 0 || nr > grid.length || nc < 0 || nc > grid[0].length || grid[nr][nc] == '#' || seen.has(nKey)) {
+        continue;
       }
+      seen.add(nKey);
+      q.push([nr, nc, s-1]);
     }
-    positions = nextPositions;
   }
-
-  // printGrid(positions);
-
-  return positions.length;
+  return ans.size;
 };
 
 const part2 = (data: string) => {
