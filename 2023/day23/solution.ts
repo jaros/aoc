@@ -74,15 +74,8 @@ const part2 = (data: string) => {
   let isFinish = (point: Point) => point.r == finish.r && point.c == finish.c;
   let canMove = (r: number, c: number) => grid[r][c] != '#';
 
+  // using contraction poitns
   let points: string[] = [encode(start), encode(finish)];
-
-  let tileDirs: Record<string, number[][]> = {
-    '^': [[-1, 0]], 
-    '>': [[0, 1]], 
-    'v': [[1, 0]], 
-    '<': [[0, -1]],
-    '.': dirs
-  }
 
   for (let r = 0; r < len; r++) {
     for (let c = 0; c < len; c++) {
@@ -120,7 +113,7 @@ const part2 = (data: string) => {
         graph[edgeKey][encode({r,c})] = n
         continue;
       }
-      for (let [dr, dc] of tileDirs[grid[r][c]]) {
+      for (let [dr, dc] of dirs) {
         let nr = r + dr
         let nc = c + dc
         let newKey = encode({r: nr, c: nc})
@@ -144,7 +137,8 @@ const part2 = (data: string) => {
     let ptKey = encode(pt);
     seen.add(ptKey)
     for (let nx in graph[ptKey] ) {
-      m = Math.max(m, dfs(decode(nx)) + graph[ptKey][nx])
+      if (!seen.has(nx))
+        m = Math.max(m, dfs(decode(nx)) + graph[ptKey][nx])
     }
     seen.delete(ptKey)
     return m;
