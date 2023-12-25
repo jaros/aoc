@@ -9,7 +9,6 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "jsnetworkx": "^0.3.4",
     "mathjs": "^12.2.1"
   }
 }
