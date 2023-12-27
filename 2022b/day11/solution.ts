@@ -80,6 +80,7 @@ const part1 = (data: string) => {
 
 const part2 = (data: string) => {
   let monkeys = initMonkeys(data);
+  let commonDivider = monkeys.reduce((cd, m) => cd * m.divisible_by, 1)
 
   let simulateRound = () => {
     for (let monkey of monkeys) {
@@ -87,7 +88,7 @@ const part2 = (data: string) => {
         monkey.times++;
         let item = monkey.items.shift()!;
         item = monkey.op(item);
-        // item = Math.floor(item / 3);
+        item = item % commonDivider;
         let test = item / monkey.divisible_by;
         if (test - Math.floor(test) == 0) {
           monkeys[monkey.truthy_monkey].items.push(item);
