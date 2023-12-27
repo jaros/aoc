@@ -11,7 +11,6 @@ const part1 = (data: string) => {
   for (let i = 0; i < data.length; i++) {
     if (ignoreNext) {
       ignoreNext = false;
-      continue;
     }
     else if (data.charAt(i) == '!') {
       ignoreNext = true;
@@ -39,7 +38,29 @@ const part1 = (data: string) => {
 
 
 const part2 = (data: string) => {
-  return 0;
+  let ignoreNext = false;
+  let withinGarbage = false;
+  let garbageCount = 0;
+
+  for (let i = 0; i < data.length; i++) {
+    if (ignoreNext) {
+      ignoreNext = false;
+    }
+    else if (data.charAt(i) == '!') {
+      ignoreNext = true;
+    }
+    else if (data.charAt(i) == '>') {
+      withinGarbage = false;
+    }
+    else if (withinGarbage) {
+      garbageCount++;
+    }
+    else if (data.charAt(i) == '<') {
+      withinGarbage = true;
+    }
+  }
+
+  return garbageCount;
 }
 
 export const solve: Solution = (source) => {
