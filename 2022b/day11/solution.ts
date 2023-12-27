@@ -12,8 +12,6 @@ type Monkey = {
   times: number;
 }
 
-const monkeys: Monkey[] = [];
-
 let ops: Record<string, (a: number) => (b: number) => number> = {
   '+': (n: number) => (old: number) => old + n,
   '-': (n: number) => (old: number) => old - n,
@@ -48,64 +46,49 @@ let initMonkeys = (data: string): Monkey[] => {
   return monkeys;
 }
 
-const part1 = (data: string) => {
-  let monkeys = initMonkeys(data);
-
-  let simulateRound = () => {
-    for (let monkey of monkeys) {
-      while (monkey.items.length) {
-        monkey.times++;
-        let item = monkey.items.shift()!;
-        item = monkey.op(item);
-        item = Math.floor(item / 3);
-        let test = item / monkey.divisible_by;
-        if (test - Math.floor(test) == 0) {
-          monkeys[monkey.truthy_monkey].items.push(item);
-        } else {
-          monkeys[monkey.falsy_monkey].items.push(item);
-        }
+let simulateRound = ( monkeys: Monkey[], manageItem: (n: number) => number) => {
+  for (let monkey of monkeys) {
+    while (monkey.items.length) {
+      monkey.times++;
+      let item = monkey.items.shift()!;
+      item = monkey.op(item);
+      item = manageItem(item);
+      let test = item / monkey.divisible_by;
+      if (test - Math.floor(test) == 0) {
+        monkeys[monkey.truthy_monkey].items.push(item);
+      } else {
+        monkeys[monkey.falsy_monkey].items.push(item);
       }
     }
   }
+}
 
+let getMonkeysBusiness = (monkeys: Monkey[]) => {
+  let [m1, m2] = monkeys.sort((a, b) => b.times - a.times);
+  return m1.times * m2.times;
+}
+
+const part1 = (data: string) => {
+  let monkeys = initMonkeys(data);
+  let manage = (n: number) => Math.floor(n / 3);
   for (let i = 0; i < 20; i++) {
-    simulateRound();
+    simulateRound(monkeys, manage);
   }
 
-  let [m1, m2] = monkeys.sort((a, b) => b.times - a.times);
-
-  return m1.times * m2.times;
+  return getMonkeysBusiness(monkeys);
 }
 
 
 const part2 = (data: string) => {
   let monkeys = initMonkeys(data);
   let commonDivider = monkeys.reduce((cd, m) => cd * m.divisible_by, 1)
-
-  let simulateRound = () => {
-    for (let monkey of monkeys) {
-      while (monkey.items.length) {
-        monkey.times++;
-        let item = monkey.items.shift()!;
-        item = monkey.op(item);
-        item = item % commonDivider;
-        let test = item / monkey.divisible_by;
-        if (test - Math.floor(test) == 0) {
-          monkeys[monkey.truthy_monkey].items.push(item);
-        } else {
-          monkeys[monkey.falsy_monkey].items.push(item);
-        }
-      }
-    }
-  }
-
+  
+  let manage = (n: number) => n % commonDivider;
   for (let i = 0; i < 10000; i++) {
-    simulateRound();
+    simulateRound(monkeys, manage);
   }
 
-  let [m1, m2] = monkeys.sort((a, b) => b.times - a.times);
-
-  return m1.times * m2.times;
+  return getMonkeysBusiness(monkeys);
 }
 
 export const solve: Solution = (source) => {
