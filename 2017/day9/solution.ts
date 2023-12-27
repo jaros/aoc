@@ -3,7 +3,38 @@ import { sum } from "../../2023/utils";
 import { Solution, readInput, title, withTime } from "../../common/types";
 
 const part1 = (data: string) => {
- return 0;
+  let openBrackets = 0;
+  let ignoreNext = false;
+  let withinGarbage = false;
+  let total = 0;
+
+  for (let i = 0; i < data.length; i++) {
+    if (ignoreNext) {
+      ignoreNext = false;
+      continue;
+    }
+    else if (data.charAt(i) == '!') {
+      ignoreNext = true;
+    }
+    else if (data.charAt(i) == '>') {
+      withinGarbage = false;
+    }
+    else if (withinGarbage) {
+      continue;
+    }
+    else if (data.charAt(i) == '<') {
+      withinGarbage = true;
+    }
+    else if (data.charAt(i) == '{') {
+      openBrackets++;
+    }
+    else if (data.charAt(i) == '}') {
+      total += openBrackets;
+      openBrackets--;
+    }
+  }
+
+  return total;
 }
 
 
