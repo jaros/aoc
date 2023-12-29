@@ -52,7 +52,7 @@ const part2 = (data: string) => {
 };
 
 export const solve: Solution = (source) => {
-  title("Day 11: Digital Plumber");
+  title("Day 12: Digital Plumber");
   const data = readInput(source, import.meta.dir);
   withTime(part1)(data);
   withTime(part2)(data);
