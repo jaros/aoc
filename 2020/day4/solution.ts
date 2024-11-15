@@ -10,18 +10,17 @@ import { Solution, readInput, title, withTime } from "../../common/types";
 // pid (Passport ID)
 // cid (Country ID)
 
-const MANDATORY_FIELDS = ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"];
-const OPTIONAL_FIELDS = ["cid"];
+type Passport = Record<string, string>;
 
-const parseInput = (data: string): Record<string, string>[] => data.split("\n\n").map(passDetails => {
+const parseInput = (data: string): Passport[] => data.split("\n\n").map(passDetails => {
   let fields = passDetails.split(/\s+/);
   let keysVals = Object.fromEntries(fields.map(field => field.split(":")));
   return keysVals;
 });
 
-const hasMandatoryFields = (passport: Record<string, string>): boolean => MANDATORY_FIELDS.every(field => !!passport[field]);
+const hasMandatoryFields = (passport: Passport): boolean => Object.keys(passValidators).every(field => !!passport[field]);
 
-let withinRange = (val: string, min: number, max: number) =>  {
+let withinRange = (min: number, max: number) => (val: string) =>  {
   if (val?.match(/^[0-9]{4}$/)?.length != 1) {
     return false;
   }
@@ -29,26 +28,30 @@ let withinRange = (val: string, min: number, max: number) =>  {
   return num >= min && num <= max;
 }
 
-const allFieldsValid = (passport: Record<string, string>): boolean => {
+const eclValues = ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"];
 
-  let hgt = passport.hgt;
-  let hgtValid = hgt?.endsWith("cm")
-    ? Number(hgt.split("cm")[0]) >= 150 && Number(hgt.split("cm")[0]) <= 193
-    : hgt?.endsWith("in")
-      ? Number(hgt.split("in")[0]) >= 59 && Number(hgt.split("in")[0]) <= 76
-      : false;
-  let hclValue = passport.hcl?.split("#")?.[1]
-  let hclValid = hclValue?.match(/^[0-9a-f]{6}$/)?.length === 1;
-  let eclValid = ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"].includes(passport.ecl);
-  let pidValid = passport.pid?.match(/^[0-9]{9}$/)?.length === 1;
-  return withinRange(passport.byr, 1920, 2002) &&
-  withinRange(passport.iyr, 2010, 2020) &&
-  withinRange(passport.eyr, 2020, 2030) &&
-  hgtValid &&
-  hclValid &&
-  eclValid &&
-  pidValid
-  ;
+const passValidators: Record<string, (val: string) => boolean> = {
+  byr: withinRange(1920, 2002),
+  iyr: withinRange(2010, 2020),
+  eyr: withinRange(2020, 2030),
+  hgt: val => {
+    if (val?.endsWith("cm")) {
+      let num = Number(val.split("cm")[0]);
+      return num >= 150 && num <= 193
+    }
+    if (val?.endsWith("in")) {
+      let num = Number(val.split("in")[0]);
+      return num >= 59 && num <= 76
+    }
+    return false;
+  },
+  hcl: val => val?.match(/^#[0-9a-f]{6}$/)?.length === 1,
+  ecl: val => eclValues.includes(val),
+  pid: val => val?.match(/^[0-9]{9}$/)?.length === 1,
+}
+
+const allFieldsValid = (passport: Passport): boolean => {
+  return Object.entries(passValidators).every(([key, validate]) => validate(passport[key])); 
 };
 
 const part1 = (data: string) => {
