@@ -50,7 +50,18 @@ const part1 = (data: string) => {
 };
 
 const part2 = (data: string) => {
-  
+  let lines = parseInput(data);
+  let ticketIds = lines.map(ticket => parseTicket(ticket)).sort((a, b) => a-b);
+  let curr = ticketIds[0];
+  let i = 1;
+  while (i < ticketIds.length) {
+    let next = ticketIds[i++];
+    if (next - curr !== 1) {
+      return next -1;
+    }
+    curr = next;
+  }
+  return -1;
 };
 
 export const solve: Solution = (source) => {
