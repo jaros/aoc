@@ -6,40 +6,29 @@ const parseInput = (data: string): string[] => data.split("\n");
 const TOTAL_ROWS = 127;
 const SEATS_IN_ROW = 7;
 
-const parseTicket = (line: string) => {
-  let i = 0;
+const binarySearcher = (line: string) => (from: number, to: number, max: number, lowerSign: string, upperSign: string) => {
+  let i = from;
   let l = 0;
-  let r = TOTAL_ROWS
+  let r = max
   let mid = 0;
-  while (i < 7) {
-    if (line[i] == 'F') { // front - lower
+  while (i < to) {
+    if (line[i] == lowerSign) { // front/left - lower
       mid = Math.floor((l+r)/2);
       r = mid;
-    } else if (line[i] == 'B') { // back - upper
+    } else if (line[i] == upperSign) { // back/right - upper
       mid = Math.ceil((l+r)/2);
       l = mid;
     }
     i++;
   }
-  const row = mid;
+  return mid;
+}
 
-  l = 0;
-  r = SEATS_IN_ROW
-  mid = 0;
-  while (i < 10) {
-    if (line[i] == 'R') { // right - upper
-      mid = Math.ceil((l+r)/2);
-      l = mid;
-    } else if (line[i] == 'L') { // left - lower
-      mid = Math.floor((l+r)/2);
-      r = mid;
-    }
-    i++;
-  }
-  const col = mid; 
-
+const parseTicket = (line: string) => {
+  const findValue = binarySearcher(line);
+  const row = findValue(0, 7, TOTAL_ROWS, 'F', 'B');
+  const col = findValue(7, 10, SEATS_IN_ROW, 'L', 'R'); 
   const ticketId = row * 8 + col;
-
   return ticketId;
 }
 
