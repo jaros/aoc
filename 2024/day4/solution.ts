@@ -54,10 +54,6 @@ const countTimes = (board: string[]): number => {
 
   let diagonals = extractDiagonals(board);
 
-  // console.log(diagonals)
-  // console.log(rows)
-  // console.log(cols)
-
   let rCounts = rows.map(countBiDirect).reduce(sum, 0);
   let cCounts = cols.map(countBiDirect).reduce(sum, 0);
   let dCounts = diagonals.map(countBiDirect).reduce(sum, 0);
@@ -70,8 +66,30 @@ const part1 = (data: string) => {
   return countTimes(lines);
 };
 
+const countTimesX = (board: string[]): number => {
+  let count = 0;
+
+  let check = (rIdx: number, cIdx: number): number => {
+    let lr = (board[rIdx][cIdx] == 'M' && board[rIdx+1][cIdx+1] == 'A' && board[rIdx+2][cIdx+2] == 'S')
+    ||
+    (board[rIdx][cIdx] == 'S' && board[rIdx+1][cIdx+1] == 'A' && board[rIdx+2][cIdx+2] == 'M');
+    let rl = (board[rIdx][cIdx+2] == 'M' && board[rIdx+1][cIdx+1] == 'A' && board[rIdx+2][cIdx] == 'S')
+    ||
+    ((board[rIdx][cIdx+2] == 'S' && board[rIdx+1][cIdx+1] == 'A' && board[rIdx+2][cIdx] == 'M'));
+    return (lr && rl) ? 1 : 0;
+  }
+
+  for (let r=0; r < board.length-2; r++) {
+    for (let c=0; c < board.length-2; c++) {
+      // get 3x3 square and count and add to result
+      count += check(r, c)
+    }
+  }
+  return count;
+}
+
 const part2 = (data: string) => {
-  return -1;
+  return countTimesX(parseInput(data));
 };
 
 export const solve: Solution = (source) => {
