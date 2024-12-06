@@ -1,7 +1,5 @@
 import { Solution, readInput, title, withTime } from "../../common/types";
 
-const sum = (a: number, b: number) => a + b;
-
 const parseInput = (data: string) => {
   let lines = data.split("\n");
   return lines;
@@ -82,7 +80,7 @@ const part2 = (data: string) => {
     let [dy, dx] = movingDir[dirIdx];
 
     while (y >= 0 && y < tempGrid.length && x >= 0 && x < tempGrid[y].length) {
-      if (visited.has(toStrDir(y, x, dirIdx))) { // && y === startY && x === startX
+      if (visited.has(toStrDir(y, x, dirIdx))) {
         return true; // Loop detected
       }
 
