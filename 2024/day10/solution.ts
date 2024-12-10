@@ -30,14 +30,14 @@ let findHeads = (grid: number[][]): Position[] => {
   return heads;
 };
 
-const isValidPosition = (grid: Grid) => (pos: Position): boolean => {
-  return pos.row >= 0 && pos.row < grid.length && pos.col >= 0 && pos.col < grid[0].length;
-}
-
-const makeBacktrack = (grid: Grid) => {
-  const backtrack = (pos: Position, currentValue: number): Position[] => {
-    const isValid = isValidPosition(grid);
+const findAllWaysToTops = (data: string) => {
+  const grid = parseInput(data).map((line) => line.split("").map(Number));
   
+  const isValid = (pos: Position): boolean => {
+    return pos.row >= 0 && pos.row < grid.length && pos.col >= 0 && pos.col < grid[0].length;
+  }
+
+  const backtrack = (pos: Position, currentValue: number): Position[] => {
     if (!isValid(pos) || grid[pos.row][pos.col] < currentValue) {
       return [];
     }
@@ -58,7 +58,7 @@ const makeBacktrack = (grid: Grid) => {
       };
       if (isValid(nextPos)) {
         const nextValue = grid[nextPos.row][nextPos.col];
-        if (nextValue === currentValue + 1) { // nextValue === 9 || 
+        if (nextValue === currentValue + 1) {
           // ways += backtrack(nextPos, nextValue);
           ways.push(...backtrack(nextPos, nextValue));
         }
@@ -68,27 +68,18 @@ const makeBacktrack = (grid: Grid) => {
     grid[pos.row][pos.col] = originalValue; // Restore the grid state
     return ways;
   };
-  return backtrack;
+
+  return findHeads(grid).map(head => backtrack({ ...head }, 0));
 }
 
 const part1 = (data: string) => {
-  let grid = parseInput(data).map((line) => line.split("").map(Number));
-
-  let heads = findHeads(grid);
-  const backtrack = makeBacktrack(grid);
-
-  let ways = heads.map(head => backtrack({ ...head }, 0));
+  let ways = findAllWaysToTops(data);
   let sets = ways.map(w => new Set(w.map(toStr)));
   return sets.map(s => s.size).reduce(sum);
 };
 
 const part2 = (data: string) => {
-  let grid = parseInput(data).map((line) => line.split("").map(Number));
-
-  let heads = findHeads(grid);
-  const backtrack = makeBacktrack(grid);
-
-  let ways = heads.map(head => backtrack({ ...head }, 0));
+  let ways = findAllWaysToTops(data);
   return ways.map(s => s.length).reduce(sum);
 };
 
