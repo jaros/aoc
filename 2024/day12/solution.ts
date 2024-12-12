@@ -13,34 +13,36 @@ type Region = {
   area: Area;
 };
 
+const adj4 = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+
+const toKey = ([row, col]: number[]) => `${row},${col}`;
+const toPerKey = ([p1, p2]: number[][]) => toKey(p1) + "," + toKey(p2);
 
 let countPerimeter = (area: Area): number => {
-   // To calculate the perimeter, create a set of the area coordinates for quick lookup
-   let areaSet = new Set(area.map(([r, c]) => `${r},${c}`));
-   let perimeter = 0;
- 
-   for (let [row, col] of area) {
-     // Check each of the four directions (up, down, left, right)
-     if (!areaSet.has(`${row - 1},${col}`)) {
-       perimeter++; // No neighbor above
-     }
-     if (!areaSet.has(`${row + 1},${col}`)) {
-       perimeter++; // No neighbor below
-     }
-     if (!areaSet.has(`${row},${col - 1}`)) {
-       perimeter++; // No neighbor to the left
-     }
-     if (!areaSet.has(`${row},${col + 1}`)) {
-       perimeter++; // No neighbor to the right
-     }
-   }
- 
-   return perimeter;
-}
+  // To calculate the perimeter, create a set of the area coordinates for quick lookup
+  let areaSet = new Set(area.map(toKey));
+  let perimeter = 0;
+
+  for (let [row, col] of area) {
+    // Check each of the four directions (up, down, left, right)
+    for (let [dRow, dCol] of adj4) {
+      let nCell = [row + dRow, col + dCol];
+      if (!areaSet.has(toKey(nCell))) {
+        // No more neighbors in this direction
+        perimeter++; // No neighbor above
+      }
+    }
+  }
+  return perimeter;
+};
 
 const buildRegions = (grid: string[][]): Region[] => {
   const regions: Region[] = [];
   let visited = new Set<string>();
+
+  const withinGrid = ([r,c]: number[]) => {
+    return r >= 0 && r < grid.length && c >= 0 && c < grid[r].length;
+  }
 
   // BFS search for neigbors
   let floodFill = (symbol: string, row: number, col: number, area: Area) => {
@@ -48,7 +50,7 @@ const buildRegions = (grid: string[][]): Region[] => {
 
     while (stack.length > 0) {
       let [r, c] = stack.pop()!;
-      let key = `${r},${c}`;
+      let key = toKey([r, c]);
 
       if (visited.has(key) || grid[r][c] !== symbol) {
         continue;
@@ -58,17 +60,19 @@ const buildRegions = (grid: string[][]): Region[] => {
       area.push([r, c]);
 
       // Add neighbors to the stack
-      if (r > 0) stack.push([r - 1, c]); // up
-      if (r < grid.length - 1) stack.push([r + 1, c]); // down
-      if (c > 0) stack.push([r, c - 1]); // left
-      if (c < grid[0].length - 1) stack.push([r, c + 1]); // right
+      for (let [dRow, dCol] of adj4) {
+        let nCell = [r + dRow, c + dCol];
+        if (withinGrid(nCell)) {
+          stack.push(nCell);
+        }
+      }
     }
   };
 
   for (let row = 0; row < grid.length; row++) {
     for (let col = 0; col < grid[row].length; col++) {
       let symbol = grid[row][col];
-      let key = `${row},${col}`;
+      let key = toKey([row, col]);
 
       if (!visited.has(key)) {
         let area: Area = [];
@@ -88,77 +92,46 @@ const part1 = (data: string) => {
   let areaByPerimeter = regions.map((region) => {
     let size = region.area.length;
     let perimeter = countPerimeter(region.area);
-    // console.log(region.symbol, size, perimeter)
     return size * perimeter;
   });
-  return areaByPerimeter.reduce((a, b) => a + b, 0);
+  return areaByPerimeter.reduce(sum);
 };
 
 let countPerimeterSides = (area: Area): number => {
-  let areaSet = new Set(area.map(([r, c]) => `${r},${c}`));
-  let sideSet = new Set<string>();
+   // To calculate the perimeter, create a set of the area coordinates for quick lookup
+   let areaSet = new Set(area.map(toKey));
+   let perimeter = [];
+   let sides = 0;
+ 
+   for (let [row, col] of area) {
+     // Check each of the four directions (up, down, left, right)
+     for (let [dRow, dCol] of adj4) {
+       let nCell = [row + dRow, col + dCol];
+       if (!areaSet.has(toKey(nCell))) {
+         // No more neighbors in this direction
+         perimeter.push([[row, col], nCell]); // No neighbor above
+       }
+     }
+   }
 
-  // Helper to check if a cell is outside the region
-  const isBoundary = (row: number, col: number) => !areaSet.has(`${row},${col}`);
-
-  // Collect all perimeter edges into sideSet
-  for (let [row, col] of area) {
-    if (isBoundary(row - 1, col)) {
-      sideSet.add(`H,${row},${col}`); // Top edge
-    }
-    if (isBoundary(row + 1, col)) {
-      sideSet.add(`H,${row + 1},${col}`); // Bottom edge
-    }
-    if (isBoundary(row, col - 1)) {
-      sideSet.add(`V,${row},${col}`); // Left edge
-    }
-    if (isBoundary(row, col + 1)) {
-      sideSet.add(`V,${row},${col + 1}`); // Right edge
-    }
-  }
-
-  // Function to count contiguous straight lines from sideSet
-  const countLines = (sideSet: Set<string>): number => {
-    let visited = new Set<string>();
-    let lines = 0;
-
-    for (let side of sideSet) {
-      if (visited.has(side)) continue;
-
-      // Start a new line
-      lines++;
-      let [type, row, col] = side.split(",");
-      row = parseInt(row);
-      col = parseInt(col);
-
-      // Explore connected edges
-      let queue = [[type, row, col]];
-      while (queue.length > 0) {
-        let [curType, curRow, curCol] = queue.pop()!;
-        let key = `${curType},${curRow},${curCol}`;
-
-        if (!sideSet.has(key) || visited.has(key)) continue;
-        visited.add(key);
-
-        // Check neighbors for continuation of the line
-        if (curType === "H") {
-          if (sideSet.has(`H,${curRow},${curCol - 1}`)) queue.push(["H", curRow, curCol - 1]); // Horizontal left
-          if (sideSet.has(`H,${curRow},${curCol + 1}`)) queue.push(["H", curRow, curCol + 1]); // Horizontal right
-        } else if (curType === "V") {
-          if (sideSet.has(`V,${curRow - 1},${curCol}`)) queue.push(["V", curRow - 1, curCol]); // Vertical up
-          if (sideSet.has(`V,${curRow + 1},${curCol}`)) queue.push(["V", curRow + 1, curCol]); // Vertical down
-        }
+   let perSet = new Set(perimeter.map(toPerKey));
+   for (let [p1,p2] of perimeter) {
+    let keep = true;
+    for (let [dx, dy] of [[1, 0], [0, 1]]) {
+      let p1n = [p1[0]+dx, p1[1]+dy];
+      let p2n = [p2[0]+dx, p2[1]+dy];
+      if (perSet.has(toPerKey([p1n, p2n]))) {
+        keep = false;
       }
     }
+    if (keep) {
+      sides++;
+    }
+   }
 
-    return lines;
-  };
-
-  // Count and return the number of contiguous lines forming the perimeter
-  return countLines(sideSet);
+   return sides;
 }
 
-// 897612 -- too low
 const part2 = (data: string) => {
   let grid = parseInput(data).map((line) => line.split(""));
 
@@ -167,10 +140,9 @@ const part2 = (data: string) => {
   let areaByPerimeter = regions.map((region) => {
     let size = region.area.length;
     let perimeter = countPerimeterSides(region.area);
-    console.log(region.symbol, size, perimeter)
     return size * perimeter;
   });
-  return areaByPerimeter.reduce((a, b) => a + b, 0);
+  return areaByPerimeter.reduce(sum);
 };
 
 export const solve: Solution = (source) => {
