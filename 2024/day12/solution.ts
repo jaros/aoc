@@ -38,12 +38,8 @@ let countPerimeter = (area: Area): number => {
    return perimeter;
 }
 
-
-const part1 = (data: string) => {
-  let grid = parseInput(data).map((line) => line.split(""));
-
+const buildRegions = (grid: string[][]): Region[] => {
   const regions: Region[] = [];
-
   let visited = new Set<string>();
 
   // BFS search for neigbors
@@ -81,6 +77,13 @@ const part1 = (data: string) => {
       }
     }
   }
+  return regions;
+}
+
+const part1 = (data: string) => {
+  let grid = parseInput(data).map((line) => line.split(""));
+
+  const regions: Region[] = buildRegions(grid);
 
   let areaByPerimeter = regions.map((region) => {
     let size = region.area.length;
@@ -91,8 +94,83 @@ const part1 = (data: string) => {
   return areaByPerimeter.reduce((a, b) => a + b, 0);
 };
 
+let countPerimeterSides = (area: Area): number => {
+  let areaSet = new Set(area.map(([r, c]) => `${r},${c}`));
+  let sideSet = new Set<string>();
+
+  // Helper to check if a cell is outside the region
+  const isBoundary = (row: number, col: number) => !areaSet.has(`${row},${col}`);
+
+  // Collect all perimeter edges into sideSet
+  for (let [row, col] of area) {
+    if (isBoundary(row - 1, col)) {
+      sideSet.add(`H,${row},${col}`); // Top edge
+    }
+    if (isBoundary(row + 1, col)) {
+      sideSet.add(`H,${row + 1},${col}`); // Bottom edge
+    }
+    if (isBoundary(row, col - 1)) {
+      sideSet.add(`V,${row},${col}`); // Left edge
+    }
+    if (isBoundary(row, col + 1)) {
+      sideSet.add(`V,${row},${col + 1}`); // Right edge
+    }
+  }
+
+  // Function to count contiguous straight lines from sideSet
+  const countLines = (sideSet: Set<string>): number => {
+    let visited = new Set<string>();
+    let lines = 0;
+
+    for (let side of sideSet) {
+      if (visited.has(side)) continue;
+
+      // Start a new line
+      lines++;
+      let [type, row, col] = side.split(",");
+      row = parseInt(row);
+      col = parseInt(col);
+
+      // Explore connected edges
+      let queue = [[type, row, col]];
+      while (queue.length > 0) {
+        let [curType, curRow, curCol] = queue.pop()!;
+        let key = `${curType},${curRow},${curCol}`;
+
+        if (!sideSet.has(key) || visited.has(key)) continue;
+        visited.add(key);
+
+        // Check neighbors for continuation of the line
+        if (curType === "H") {
+          if (sideSet.has(`H,${curRow},${curCol - 1}`)) queue.push(["H", curRow, curCol - 1]); // Horizontal left
+          if (sideSet.has(`H,${curRow},${curCol + 1}`)) queue.push(["H", curRow, curCol + 1]); // Horizontal right
+        } else if (curType === "V") {
+          if (sideSet.has(`V,${curRow - 1},${curCol}`)) queue.push(["V", curRow - 1, curCol]); // Vertical up
+          if (sideSet.has(`V,${curRow + 1},${curCol}`)) queue.push(["V", curRow + 1, curCol]); // Vertical down
+        }
+      }
+    }
+
+    return lines;
+  };
+
+  // Count and return the number of contiguous lines forming the perimeter
+  return countLines(sideSet);
+}
+
+// 897612 -- too low
 const part2 = (data: string) => {
-  return -1;
+  let grid = parseInput(data).map((line) => line.split(""));
+
+  const regions: Region[] = buildRegions(grid);
+
+  let areaByPerimeter = regions.map((region) => {
+    let size = region.area.length;
+    let perimeter = countPerimeterSides(region.area);
+    console.log(region.symbol, size, perimeter)
+    return size * perimeter;
+  });
+  return areaByPerimeter.reduce((a, b) => a + b, 0);
 };
 
 export const solve: Solution = (source) => {
