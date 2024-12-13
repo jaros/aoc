@@ -6,22 +6,19 @@ const nums = (s: string): number[] => {
 };
 
 const part1 = (data: string) => {
-  // let lines = parseInput(data);
-  // console.log(lines)
   let ans = 0
-  for (let l of data.split("\n\n")) {
-    let ll = l.split("\n")
-    let a = nums(ll[0])
-    let b = nums(ll[1])
-    let p = nums(ll[2])
-    // console.log(a)
+  for (let block of data.split("\n\n")) {
+    let [a, b, p] = block.split("\n")
+    let [ax, ay] = nums(a)
+    let [bx, by] = nums(b)
+    let [px, py] = nums(p)
     let best = 5000
 
     for (let i=0; i < 101; i++) {
       for (let j=0; j<101; j++) {
-        let nx = a[0]*i + b[0]*j
-        let ny = a[1]*i + b[1]*j
-        if (p[0] == nx && p[1] == ny) {
+        let nx = ax*i + bx*j
+        let ny = ay*i + by*j
+        if (px == nx && py == ny) {
           best = Math.min(best, 3*i+j)
         }
       }
@@ -35,7 +32,21 @@ const part1 = (data: string) => {
 };
 
 const part2 = (data: string) => {
-  return -1;
+  let ans = 0
+  for (let block of data.split("\n\n")) {
+    let [a, b, p] = block.split("\n")
+    let [ax, ay] = nums(a)
+    let [bx, by] = nums(b)
+    let [px, py] = nums(p).map(x => x + 10000000000000)
+
+    let ca = (px * by - py * bx) / (ax * by - ay * bx);
+    let cb = (px - ax * ca) / bx;
+    if (ca % 1 == 0 && cb % 1 == 0) {
+      ans += ((ca * 3) + cb);
+    }
+ 
+  }
+  return ans;
 };
 
 export const solve: Solution = (source) => {
