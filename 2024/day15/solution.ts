@@ -3,6 +3,17 @@ import { Solution, readInput, title, withTime } from "../../common/types";
 
 type Pos = [number, number];
 
+let findStart = (grid: string[][]): Pos => {
+  for (let r = 0; r < grid.length; r++) {
+    for (let c = 0; c < grid[r].length; c++) {
+      if (grid[r][c] == "@") {
+        return [r, c];
+      }
+    }
+  }
+  return [-1, -1];
+};
+
 const part1 = (data: string) => {
   let [map, moves] = data.split("\n\n");
   moves = moves.split("\n").join("");
@@ -11,24 +22,13 @@ const part1 = (data: string) => {
   let n = grid.length;
   let m = grid[0].length;
 
-  let findStart = (): Pos => {
-    for (let r = 0; r < n; r++) {
-      for (let c = 0; c < m; c++) {
-        if (grid[r][c] == "@") {
-          return [r, c];
-        }
-      }
-    }
-    return [-1, -1];
-  };
-
-  let robPos = findStart();
+  let robPos = findStart(grid);
 
   const stepMap: Record<string, Pos> = {
     "<": [0, -1],
     ">": [0, 1],
     "^": [-1, 0],
-    v: [1, 0],
+    "v": [1, 0],
   };
 
   let moveBox = (boxPos: Pos, dir: Pos): boolean => {
@@ -103,7 +103,98 @@ const part1 = (data: string) => {
 };
 
 const part2 = (data: string) => {
+  let [map, moves] = data.split("\n\n");
+  moves = moves.split("\n").join("");
+
+  let expansion: Record<string, string> = {
+     "#": "##",
+     "O": "[]",
+     ".": "..",
+     "@": "@."
+  }
+
+  let expand = (s: string): string => expansion[s];
+
+  let grid = map.split("\n").map((line) => line.split("").map(expand).join("").split(""));
+  let n = grid.length;
+  let m = grid[0].length;
+
+  let robPos = findStart(grid);
+
+  const stepMap: Record<string, Pos> = {
+    "<": [0, -1],
+    ">": [0, 1],
+    "^": [-1, 0],
+    v: [1, 0],
+  };
+
+  const getTargets = (robPos: Pos, [dr, dc]: Pos): Pos[]| null => {
+    const [r,c] = robPos
+    let targets: Pos[] = [[r,c]]
+    let go = true
+
+    let i = 0
+    let targetsLen = 1
+    while (i < targetsLen) {
+      let [cr, cc] = targets[i++];
+      let nr = cr + dr;
+      let nc = cc + dc;
+      if (targets.some(([r, c]) => r == nr  && c == nc)) {
+        continue;
+      }
+      let char = grid[nr][nc]
+      if (char == "#") {
+        return null;
+      }
+      if (char == "[") {
+        targets.push([nr, nc])
+        targets.push([nr, nc + 1])
+        targetsLen += 2
+      }
+      if (char == "]") {
+        targets.push([nr, nc])
+        targets.push([nr, nc - 1])
+        targetsLen += 2
+      }
+    }
+    return targets;
+  }
+
+  for (let step of moves) {
+    let [dr, dc] = stepMap[step];
+    const [r,c] = robPos
+    
+    const targets = getTargets(robPos, [dr, dc]);
+
+    if (targets == null) {
+      continue; // no move
+    }
+
+    let copy = grid.map(r => [...r]);
+
+    grid[r][c] = '.'
+    grid[r + dr][c + dc] = '@'
+
+    for (let i=1; i<targets.length; i++) {
+      let [br, bc] = targets[i];
+      grid[br][bc] = '.'
+    }
+    for (let i=1; i<targets.length; i++) {
+      let [br, bc] = targets[i];
+      grid[br+dr][bc+dc] = copy[br][bc]
+    }
+
+    robPos = [r + dr, c + dc];
+  }
+
   let ans = 0;
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < m; c++) {
+      if (grid[r][c] == '[') {
+        ans += 100 * r + c;
+      }
+    }
+  }
   return ans;
 };
 
