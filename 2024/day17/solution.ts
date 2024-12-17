@@ -5,7 +5,7 @@ type OpResult = { pointer: number | null; out: number | null };
 
 type Op = (val: number) => OpResult;
 
-const part1 = (data: string) => {
+const buildUnit = (data: string): {process: (pointer: number) => OpResult, program: number[]} => {
   const [regs, prog] = data.split("\n\n");
   const registers: Record<string, number> = Object.fromEntries(
     regs.split("\n").map((line) => {
@@ -15,10 +15,6 @@ const part1 = (data: string) => {
   );
 
   const program: number[] = prog.split("Program: ")[1].split(",").map(Number);
-
-  // console.log(registers)
-  // console.log(program)
-
   const operands: Record<number, () => number> = {
     0: () => 0,
     1: () => 1,
@@ -29,7 +25,6 @@ const part1 = (data: string) => {
     6: () => registers.C,
   };
 
-  // ops return the pointer increase
   const opcodes: Record<number, Op> = {
     // adv
     0: (val) => {
@@ -82,13 +77,21 @@ const part1 = (data: string) => {
       return { pointer: null, out: null };
     },
   };
+  const process = (pointer: number): OpResult => {
+    let operation = opcodes[program[pointer]];
+    let operand = program[pointer + 1];
+    return operation(operand);
+  };
+  return {process, program}
+}
+
+const part1 = (data: string) => {
+  const unit = buildUnit(data);
 
   let instructionPointer = 0;
   let outs: number[] = [];
-  while (instructionPointer < program.length - 1) {
-    let operation = opcodes[program[instructionPointer]];
-    let operand = program[instructionPointer + 1];
-    let { pointer, out } = operation(operand);
+  while (instructionPointer < unit.program.length - 1) {
+    let { pointer, out } = unit.process(instructionPointer);
     if (pointer != null) {
       instructionPointer = pointer;
     } else {
@@ -98,8 +101,7 @@ const part1 = (data: string) => {
       outs.push(out)
     }
   }
-  console.log(outs.join(","));
-  return outs.join("");
+  return outs.join(",");
 };
 
 const part2 = (data: string) => {
