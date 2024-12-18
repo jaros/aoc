@@ -40,7 +40,7 @@ const findAllWaysToTops = (data: string) => {
   const backtrack = (pos: Position, currentValue: number): Position[] => {
     if (!isValid(pos) || grid[pos.row][pos.col] < currentValue) {
       return [];
-    }
+    }// check
   
     if (grid[pos.row][pos.col] === 9) {
       return [{row: pos.row, col: pos.col}]; // Found a valid way to reach 9
