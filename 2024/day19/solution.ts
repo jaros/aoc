@@ -7,7 +7,6 @@ const part1 = (data: string) => {
   let designs = dess.split("\n")
 
   const maxLen = Math.max(...patterns.map(p => p.length));
-  // console.log("maxLen", maxLen)
   
   const pp = new Set(patterns);
 
@@ -39,7 +38,39 @@ const part1 = (data: string) => {
 };
 
 const part2 = (data: string) => {
-  return -1;
+  let [patt, dess] = data.split("\n\n");
+  let patterns = patt.split(", ");
+  let designs = dess.split("\n")
+
+  const maxLen = Math.max(...patterns.map(p => p.length));
+  
+  const pp = new Set(patterns);
+
+  let cache: Map<string, number> = new Map();
+
+  const possibleWays = (design: string): number => {
+    if (cache.has(design)) {
+      return cache.get(design)!;
+    }
+    if (design.length == 0) {
+      return 1;
+    }
+    let possibilities = []
+    for (let i=1; i <= maxLen; i++) {
+      if (design.length >= i) {
+        let prefix = design.slice(0, i);
+        if (pp.has(prefix)) {
+          let key = design.slice(i);
+          let nr = possibleWays(design.slice(i))
+          cache.set(key, nr)
+          possibilities.push(nr)
+        }
+      }
+    }
+    return possibilities.reduce(sum, 0);
+  }
+
+  return designs.flatMap(possibleWays).reduce(sum, 0);
 };
 
 export const solve: Solution = (source) => {
