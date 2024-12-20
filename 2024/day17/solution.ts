@@ -105,8 +105,73 @@ const part1 = (data: string) => {
 };
 
 const part2 = (data: string) => {
-  let ans = 0;
-  return ans;
+  const [_regs, prog] = data.split("\n\n");
+  const program: number[] = prog.split("Program: ")[1].split(",").map(Number);
+  // console.log(program)
+
+  let find = (target: number[], ans: number): number | undefined => {
+    if (target.length == 0) {
+      return ans;
+    }
+    for (let t=0; t < 8; t++) {
+      let a = ans << 3 | t
+      let b = 0
+      let c = 0
+      let out = null
+      let adv3 = false
+      let combo = (operand: number): number => {
+        if (operand >= 0 && operand <= 3) {
+          return operand;
+        }
+        if (operand == 4) return a
+        if (operand == 5) return b
+        if (operand == 6) return c
+        throw new Error("bad operand " + operand)
+      }
+      
+      for (let pointer=0; pointer < program.length - 2; pointer += 2) {
+        let ins = program[pointer]
+        let operand = program[pointer + 1]
+        if (ins == 0) {
+          if (adv3) {
+            throw new Error("multiple ADVs")
+          }
+          if (operand != 3) {
+            throw new Error("bad zero instr")
+          }
+          adv3 = true
+        } else if (ins == 1) {
+          b = b ^ operand
+        } else if (ins == 2) {
+          b = combo(operand) % 8
+        } else if (ins == 3) {
+          throw new Error("JNZ in loop body")
+        } else if (ins == 4) {
+          b = b ^ c
+        } else if (ins == 5) {
+          if (out != null) {
+            throw new Error("multiple outs")
+          }
+          out = combo(operand) % 8
+        } else if (ins == 6) {
+          b = a >> combo(operand)
+        } else if (ins == 7) {
+          c = a >> combo(operand)
+        }
+
+        if (out == target[target.length-1]) {
+          let sub = find(target.slice(0, -1), a)
+          if (sub == undefined) {
+            continue
+          } else {
+            return sub
+          }
+        }
+      }
+    }
+  }
+
+  return find(program, 0);
 };
 
 export const solve: Solution = (source) => {
