@@ -24,15 +24,44 @@ const part1 = (data: string) => {
   let finalPrices: number[] = [];
   for (let price of initPrices) {
     let next = price;
-    for (let i=0; i < 2000; i++) {
+    for (let i=0; i < 1; i++) {
       next = nextNum(next);
     }
     finalPrices.push(next);
+    break;
   }
   return finalPrices.reduce(sum, 0);
 };
 
 const part2 = (data: string) => {
+  let initPrices = data.split("\n").map(Number);
+  let oneDigitsPrices: number[][] = [];
+  let diffsPrices: number[][] = [];
+  for (let price of initPrices) {
+    let next = price;
+    let prices = [];
+    prices.push(next);
+    for (let i=0; i < 9; i++) {
+      next = nextNum(next);
+      prices.push(next);
+    }
+    let oneDigits: number[] = prices.map(p => p % 10);
+    oneDigitsPrices.push(oneDigits);
+    let diffs: number[] = [0];
+    for (let i=1; i < oneDigits.length; i++) {
+      diffs.push(oneDigits[i] - oneDigits[i-1]);
+    }
+    diffsPrices.push(diffs);
+  }
+  for (let j=0; j < oneDigitsPrices.length; j++) {
+    let ps = oneDigitsPrices[j];
+    for (let i=0; i < ps.length; i++) {
+      console.log(ps[i] + " : " + diffsPrices[j][i], ) 
+    }
+  }
+  
+  // find max bananas per buyer - use dfs with caching
+
   return -1;
 };
 
