@@ -33,36 +33,33 @@ const part1 = (data: string) => {
   return finalPrices.reduce(sum, 0);
 };
 
+let toKey = (nums: number[]) => nums.join(",");
+
 const part2 = (data: string) => {
   let initPrices = data.split("\n").map(Number);
-  let oneDigitsPrices: number[][] = [];
-  let diffsPrices: number[][] = [];
+  let seqToTotal: Map<string, number> = new Map();
   for (let price of initPrices) {
     let next = price;
-    let prices = [];
+    let prices = [next % 10];
     prices.push(next);
-    for (let i=0; i < 9; i++) {
+    for (let i=0; i < 2000; i++) {
       next = nextNum(next);
-      prices.push(next);
+      prices.push(next % 10);
     }
-    let oneDigits: number[] = prices.map(p => p % 10);
-    oneDigitsPrices.push(oneDigits);
-    let diffs: number[] = [0];
-    for (let i=1; i < oneDigits.length; i++) {
-      diffs.push(oneDigits[i] - oneDigits[i-1]);
-    }
-    diffsPrices.push(diffs);
-  }
-  for (let j=0; j < oneDigitsPrices.length; j++) {
-    let ps = oneDigitsPrices[j];
-    for (let i=0; i < ps.length; i++) {
-      console.log(ps[i] + " : " + diffsPrices[j][i], ) 
-    }
-  }
-  
-  // find max bananas per buyer - use dfs with caching
 
-  return -1;
+    let seen = new Set();
+    for (let i=0; i < prices.length - 4; i++) {
+      let [a, b, c, d, e] = prices.slice(i, i+5);
+      let seq = [b-a, c-b, d-c, e-d];
+      let key = toKey(seq);
+      if (seen.has(key)) {
+        continue;
+      }
+      seen.add(key)
+      seqToTotal.set(key, (seqToTotal.get(key) ?? 0) + e );
+    }
+  }
+  return Math.max(...seqToTotal.values());
 };
 
 export const solve: Solution = (source) => {
