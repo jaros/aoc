@@ -1,21 +1,15 @@
 import { sum } from "../../2023/utils";
 import { Solution, readInput, title, withTime } from "../../common/types";
 
-let mod = (n: number) => n % 16777216;
+let mod = (n: number) => n & 0xFFFFFF//% 16777216;
 
 let nextNum = (n: number): number => {
   // 1
-  let res = mod(n * 64); // multi 
-  n = res ^ n; // mix
-  n = mod(n);// prune
+  n = mod(n ^ mod(n * 64)); // << 6
   // 2 
-  res = Math.floor(n / 32);
-  n = res ^ n; // mix
-  n = mod(n);// prune
+  n = mod(n ^ Math.floor(n / 32)); // >> 5
   // 3
-  res = mod(n * 2048);
-  n = res ^ n; // mix
-  n = mod(n);// prune
+  n = mod(n ^ mod(n * 2048)); // << 11
   return n;
 }
 
