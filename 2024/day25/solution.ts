@@ -35,7 +35,6 @@ const part1 = (data: string) => {
     let res: number[] = new Array(WIDTH).fill(0);
     for (let c=0; c < WIDTH; c++) {
       for (let r=HEIGHT-2; r > 0; r--) {
-        // console.log(pattern[r][c])
         if (pattern[r][c] != "#") {
           break;
         } else {
@@ -67,12 +66,9 @@ const part1 = (data: string) => {
         heights: heights,
         heightsKeys: key
       });
-      // locksMem.add(key);
     }
     if (sch[0].every(char => char == ".") && sch[HEIGHT-1].every(char => char == "#")) {
       let heights = shanpshotKey(sch);
-      // console.log(sch.map(l=>l.join("")).join("\n"))
-      // console.log(heights)
       keys.push({
         type: "key",
         content: sch,
@@ -81,9 +77,6 @@ const part1 = (data: string) => {
       });
     }
   }
-
-  // console.log("locks:", locks.map(l => l.heightsKeys))
-  // console.log("keys:", keys.map(k => k.heightsKeys))
 
   let fits = 0;
 
@@ -99,12 +92,11 @@ const part1 = (data: string) => {
 };
 
 const part2 = (data: string) => {
-  let [init, ops] = data.split("\n\n");
   return -1;
 };
 
 export const solve: Solution = (source) => {
-  title("Day 25: x");
+  title("Day 25: Code Chronicle");
   const data = readInput(source, import.meta.dir);
   withTime(part1)(data);
   withTime(part2)(data);
