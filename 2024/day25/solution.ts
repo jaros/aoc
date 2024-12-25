@@ -1,94 +1,28 @@
 import { sum } from "../../2023/utils";
 import { Solution, readInput, title, withTime } from "../../common/types";
 
-let toKey = (lengths: number[]) => lengths.join(',');
-
-type Schema = {
-  type: "key" | "lock",
-  content: string[][],
-  heights: number[],
-  heightsKeys: string
-}
-
 const part1 = (data: string) => {
   let schemas: string[][][] = data.split("\n\n").map(schema => schema.split("\n").map(line => line.split("")));
-  let locks: Schema [] = [];
-  let keys: Schema[] = [];
+  let locks: number[][] = [];
+  let keys: number[][] = [];
   const HEIGHT = schemas[0].length; 
-  const WIDTH = schemas[0][0].length;
 
-  let shanpshotLock = (pattern: string[][]): number[] => {
-    let res: number[] = new Array(WIDTH).fill(0);
-    for (let c=0; c< WIDTH; c++) {
-      for (let r=1; r < HEIGHT; r++) {
-        if (pattern[r][c] != "#") {
-          break;
-        } else {
-          res[c] += 1;
-        }
-      }     
-    }
-    return res;
-  }
+  let transpose = (pattern: string[][]): string[][] => pattern[0].map((_val, colIdx) => pattern.map(row => row[colIdx]));
 
-  let shanpshotKey = (pattern: string[][]): number[] => {
-    let res: number[] = new Array(WIDTH).fill(0);
-    for (let c=0; c < WIDTH; c++) {
-      for (let r=HEIGHT-2; r > 0; r--) {
-        if (pattern[r][c] != "#") {
-          break;
-        } else {
-          res[c] += 1;
-        }
-      }     
-    }
-    return res;
-  }
+  let pinsCounts = (pins: string[]) => pins.filter(p => p == "#").length - 1
 
-  let isOverlap = (lock: Schema, key: Schema) => {
-    for (let i=0; i < lock.heights.length; i++) {
-      if (lock.heights[i] + key.heights[i] > HEIGHT-2) {
-        return false;
-      }
-    }
-    return true;
-  }
+  let isOverlap = (lock: number[]) => (key: number[]) => lock.every((pin, i) => pin + key[i] < HEIGHT - 1);
 
   for (let sch of schemas) {
-    if (sch[0].every(char => char == "#") && sch[HEIGHT-1].every(char => char == ".")) {
-      
-      let heights = shanpshotLock(sch);
-      let key = toKey(heights);
-      
-      locks.push({
-        type: "lock",
-        content: sch,
-        heights: heights,
-        heightsKeys: key
-      });
-    }
-    if (sch[0].every(char => char == ".") && sch[HEIGHT-1].every(char => char == "#")) {
-      let heights = shanpshotKey(sch);
-      keys.push({
-        type: "key",
-        content: sch,
-        heights: heights,
-        heightsKeys: toKey(heights)
-      });
+    const heights = transpose(sch).map(pinsCounts)
+    if (sch[0][0] == "#") {
+      locks.push(heights);
+    } else {
+      keys.push(heights);
     }
   }
 
-  let fits = 0;
-
-  for (let lock of locks) {
-    for (let key of keys) {
-      if (isOverlap(lock, key)) {
-        fits++;
-      }
-    }
-  }
-
-  return fits;
+  return locks.flatMap(lock => keys.filter(isOverlap(lock)).length).reduce(sum);
 };
 
 const part2 = (data: string) => {
