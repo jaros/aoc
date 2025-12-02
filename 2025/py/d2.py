@@ -57,7 +57,7 @@ def part2(data: str) -> int:
 
 def solve():
     print("Day 2: Gift Shop")
-    data = read_input("day1")
+    data = read_input("day2")
     
     result1 = part1(data)
     print(f"Part 1: {result1}")
