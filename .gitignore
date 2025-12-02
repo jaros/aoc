@@ -179,3 +179,5 @@ dist
 /test.txt
 /solution*
 test*.py
+
+/__pycache__

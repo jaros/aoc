@@ -65,7 +65,7 @@ const part2 = (data: string) => {
 }
 
 export const solve: Solution = (source) => {
-  title("Day 1: Gift Shop");
+  title("Day 2: Gift Shop");
   const data = readInput(source, import.meta.dir)
   withTime(part1)(data);
   withTime(part2)(data);
