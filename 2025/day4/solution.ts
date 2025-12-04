@@ -11,31 +11,33 @@ const adjacentDeltas = [
   [1, -1],  [1, 0],  [1, 1],
 ];
 
-const findForkliftsRemovable = (grid: string[][]): [number, number][] => {
-  const toRemove: [number, number][] = [];
+type Cell = [number, number];
+
+const findForkliftsRemovable = (grid: string[][]): Cell[] => {
+  const toRemove: Cell[] = [];
+
+  const isOutOfBounds = (row: number, col: number) =>
+    row < 0 || row >= grid.length || col < 0 || col >= grid[0].length;
+
+  const countFilledNeighbors = (row: number, col: number) => {
+    let count = 0;
+    for (const [dRow, dCol] of adjacentDeltas) {
+      const nRow = row + dRow;
+      const nCol = col + dCol;
+      if (isOutOfBounds(nRow, nCol)) {
+        continue;
+      }
+      if (grid[nRow][nCol] === "@") {
+        count++;
+      }
+    }
+    return count;
+  }
+
   for (let row = 0; row < grid.length; row++) {
     for (let col = 0; col < grid[row].length; col++) {
       const cell = grid[row][col];
-      if (cell === ".") continue;
-
-      let occupiedCount = 0;
-      for (const [dRow, dCol] of adjacentDeltas) {
-        const nRow = row + dRow;
-        const nCol = col + dCol;
-        if (
-          nRow < 0 ||
-          nRow >= grid.length ||
-          nCol < 0 ||
-          nCol >= grid[row].length
-        ) {
-          continue;
-        }
-        if (grid[nRow][nCol] === "@") {
-          occupiedCount++;
-        }
-      }
-
-      if (occupiedCount < adjLimit) {
+      if (cell === "@" && countFilledNeighbors(row, col) < adjLimit) {
         toRemove.push([row, col]);
       }
     }
