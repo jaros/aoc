@@ -74,7 +74,7 @@ const part2 = (data: string) => {
 };
 
 export const solve: Solution = (source) => {
-  title("Day 4: Cafeteria");
+  title("Day 5: Cafeteria");
   const data = readInput(source, import.meta.dir);
   withTime(part1)(data);
   withTime(part2)(data);

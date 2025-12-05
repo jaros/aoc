@@ -20,11 +20,10 @@ def get_ranges(data: str) -> List[str]:
 
 def part1(data: str) -> int:
     ranges, available_ids = get_ranges(data)
-    count = 0
-    for ingr_id in available_ids:
-        if any(r.start <= ingr_id <= r.end for r in ranges):
-            count += 1
-    return count
+    return sum(
+        any(r.start <= ingr_id <= r.end for r in ranges)
+        for ingr_id in available_ids
+    )
 
 def part2(data: str) -> int:
     ranges = get_ranges(data)[0]
