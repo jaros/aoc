@@ -33,14 +33,6 @@ const part1 = (data: string) => {
 
 const part2 = (data: string) => {
   const {ranges} = getIngredients(data);
-  
-  const isOverlapping = (range: Range, other: Range): boolean => {
-    return !(range.to < other.from || range.from > other.to);
-  }
-
-  const mergeTwoRanges = (range: Range, other: Range): Range => {
-    return {from: Math.min(range.from, other.from), to: Math.max(range.to, other.to)};
-  }
 
   // aka reduce
   const mergeRanges = (ranges: Range[]): Range[] => {
