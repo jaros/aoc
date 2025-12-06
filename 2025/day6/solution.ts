@@ -80,19 +80,20 @@ const getColumnProblems = (data: string): Problem[] => {
   return res;
 }
 
+const calculate = (problem: Problem): number => {
+  switch (problem.operation) {
+    case "+":
+      return problem.args.reduce((a, b) => a + b, 0);
+    case "*":
+      return problem.args.reduce((a, b) => a * b, 1);
+  }
+  return 0;
+};
+
 const countMathProblems = (problems: Problem[]): number => {
   let total = 0;
   for (const problem of problems) {
-    let res = 0;
-    switch (problem.operation) {
-      case "+":
-        res = problem.args.reduce((a, b) => a + b, 0);
-        break;
-      case "*":
-        res = problem.args.reduce((a, b) => a * b, 1);
-        break;
-    }
-    total += res;
+    total += calculate(problem);
   }
   return total;
 }
@@ -106,7 +107,7 @@ const part2 = (data: string) => {
 };
 
 export const solve: Solution = (source) => {
-  title("Day 6: ");
+  title("Day 6: Trash Compactor");
   const data = readInput(source, import.meta.dir);
   withTime(part1)(data);
   withTime(part2)(data);
