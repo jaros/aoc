@@ -1,39 +1,45 @@
 import { e, re } from "mathjs";
 import { Solution, readInput, title, withTime } from "../../common/types";
 
+type Operation = "+" | "*";
+
 type Problem  = {
   args: number[];
-  operation: string;
+  operation: Operation;
 }
 
 type ProblemCol  = {
   args: Map<number, string>;
-  operation: string;
+  operation: Operation;
 }
 
 const getProblems = (data: string): Problem[] => {
-  let lines = data.split("\n");
-  let height = lines.length;
-  let result = new Map<number, Problem>();
+  const lines = data.split("\n");
+  const height = lines.length;
+  const result = new Map<number, Problem>();
   for (let i = 0; i < lines.length; i++) {
-    let line = lines[i];
+    const line = lines[i];
     // process line
     // split by any number of spaces
-    let rows = line.trim().split(/\s+/);
+    const rows = line.trim().split(/\s+/);
     for (let j = 0; j < rows.length; j++) {
       let cell = rows[j];
       if (i === height - 1) {
         // process operation - last row - always defined
-        result.get(j)!.operation = cell;
-      } else {
-        let num = Number(cell); 
-        let problem = result.get(j);
-        if (problem) {
-          problem.args.push(num);
+        const existing = result.get(j);
+        if (!existing) {
+          result.set(j, { args: [], operation: cell as Operation });
         } else {
-          problem = {args: [num], operation: ""}
+          existing.operation = cell as Operation;
         }
-        result.set(j, problem);
+      } else {
+        const num = Number(cell);
+        const existing = result.get(j);
+        if (!existing) {
+          result.set(j, { args: [num], operation: "" as Operation });
+        } else {
+          existing.args.push(num);
+        }
       }
       // process cell
     }
@@ -42,21 +48,21 @@ const getProblems = (data: string): Problem[] => {
 }
 
 const getColumnProblems = (data: string): Problem[] => {
-  let lines = data.split("\n");
-  let height = lines.length;
-  let result = new Map<number, ProblemCol>();
+  const lines = data.split("\n");
+  const height = lines.length;
+  const result = new Map<number, ProblemCol>();
   // start with last row
   // save ops and record indices to use in map keys
-  let opsRow = lines[height - 1];
+  const opsRow = lines[height - 1];
   for (let j=0; j < opsRow.length; j++) {
-    let cell = opsRow[j];
+    const cell = opsRow[j];
     if (cell !== " ") {
-      result.set(j, {args: new Map<number, string>(), operation: cell});
+      result.set(j, {args: new Map<number, string>(), operation: cell as Operation});
     }
   }
   
   for (let i = 0; i < lines.length-1; i++) {
-    let line = lines[i];
+    const line = lines[i];
     let lastProblemIndex = 0; // the new columns are not aligned by leftmost char
     for (let j=0; j < line.length; j++) {
       if (result.has(j)) {
@@ -69,9 +75,9 @@ const getColumnProblems = (data: string): Problem[] => {
       }
     }
   }
-  let res: Problem[] = [];
+  const res: Problem[] = [];
   for (const probCol of result.values()) {
-    let argsNums: number[] = [];
+    const argsNums: number[] = [];
     for (const argStr of probCol.args.values()) {
       argsNums.push(Number(argStr));
     }
@@ -86,17 +92,15 @@ const calculate = (problem: Problem): number => {
       return problem.args.reduce((a, b) => a + b, 0);
     case "*":
       return problem.args.reduce((a, b) => a * b, 1);
+    default: {
+      const _exhaustive: never = problem.operation;
+      return _exhaustive;
+    }
   }
-  return 0;
 };
 
-const countMathProblems = (problems: Problem[]): number => {
-  let total = 0;
-  for (const problem of problems) {
-    total += calculate(problem);
-  }
-  return total;
-}
+const countMathProblems = (problems: Problem[]): number =>
+  problems.reduce((sum, problem) => sum + calculate(problem), 0);
 
 const part1 = (data: string) => {
   return countMathProblems(getProblems(data));
