@@ -8,49 +8,15 @@ type Problem  = {
   operation: Operation;
 }
 
-type ProblemCol  = {
+type ProblemSet  = {
   args: Map<number, string>;
   operation: Operation;
 }
 
-const getProblems = (data: string): Problem[] => {
+const getProblems = (data: string, mode: "row" | "col"): Problem[] => {
   const lines = data.split("\n");
   const height = lines.length;
-  const result = new Map<number, Problem>();
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    // process line
-    // split by any number of spaces
-    const rows = line.trim().split(/\s+/);
-    for (let j = 0; j < rows.length; j++) {
-      let cell = rows[j];
-      if (i === height - 1) {
-        // process operation - last row - always defined
-        const existing = result.get(j);
-        if (!existing) {
-          result.set(j, { args: [], operation: cell as Operation });
-        } else {
-          existing.operation = cell as Operation;
-        }
-      } else {
-        const num = Number(cell);
-        const existing = result.get(j);
-        if (!existing) {
-          result.set(j, { args: [num], operation: "" as Operation });
-        } else {
-          existing.args.push(num);
-        }
-      }
-      // process cell
-    }
-  }
-  return Array.from(result.values());
-}
-
-const getColumnProblems = (data: string): Problem[] => {
-  const lines = data.split("\n");
-  const height = lines.length;
-  const result = new Map<number, ProblemCol>();
+  const result = new Map<number, ProblemSet>();
   // start with last row
   // save ops and record indices to use in map keys
   const opsRow = lines[height - 1];
@@ -71,10 +37,12 @@ const getColumnProblems = (data: string): Problem[] => {
       let cell = line[j];
       if (cell !== " ") {
         let problem = result.get(lastProblemIndex)!;
-        problem.args.set(j, (problem.args.get(j) ?? "") + cell);
+        let idx = mode === "row" ? i : j;
+        problem.args.set(idx, (problem.args.get(idx) ?? "") + cell);
       }
     }
   }
+  // console.log(result);
   const res: Problem[] = [];
   for (const probCol of result.values()) {
     const argsNums: number[] = [];
@@ -103,11 +71,11 @@ const countMathProblems = (problems: Problem[]): number =>
   problems.reduce((sum, problem) => sum + calculate(problem), 0);
 
 const part1 = (data: string) => {
-  return countMathProblems(getProblems(data));
+  return countMathProblems(getProblems(data, "row"));
 };
 
 const part2 = (data: string) => {
-  return countMathProblems(getColumnProblems(data));
+  return countMathProblems(getProblems(data, "col"));
 };
 
 export const solve: Solution = (source) => {
