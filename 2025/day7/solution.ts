@@ -56,8 +56,32 @@ const countWays = (grid: string[], row: number, col: number, cache: number[][]):
 
 const part2 = (data: string) => {
   const [startIdx, grid] = getLines(data);
-  const cache = Array.from({length: grid.length}, () => Array<number>(grid[0].length).fill(-1));
-  return countWays(grid, 1, startIdx, cache);
+  const height = grid.length;
+  const width = grid[0].length;
+
+  // dp[row][col] = number of ways starting from (row, col)
+  const dp = Array.from({ length: height + 1 }, () =>
+    Array<number>(width + 2).fill(0)
+  );
+  for (let c = 0; c < width + 2; c++) {
+    dp[height][c] = 1;
+  }
+  for (let r = height - 1; r >= 0; r--) {
+    const line = grid[r];
+
+    for (let c = 0; c < width; c++) {
+      const cell = line[c];
+
+      if (cell === "." || cell === "S") {
+        // same column, next row
+        dp[r][c + 1] = dp[r + 1][c + 1];
+      } else if (cell === "^") {
+        // one step down-left and down-right (shifted by +1)
+        dp[r][c + 1] = dp[r + 1][c] + dp[r + 1][c + 2];
+      }
+    }
+  }
+  return dp[0][startIdx + 1];
 };
 
 export const solve: Solution = (source) => {
