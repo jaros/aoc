@@ -6,36 +6,22 @@ type Distance = {len: number, x: number, y: number};
 class UnionFind {
     public parent: Array<number>;
     constructor(size: number) {
-    
-        // Initialize the parent array with each 
-        // element as its own representative
         this.parent = Array.from({ length: size }, (_, i) => i);
     }
 
     public find(i: number): number {
-    
-        // If i itself is root or representative
+        // If i itself is parent
         if (this.parent[i] === i) {
             return i;
         }
-        
-        // Else recursively find the representative 
-        // of the parent and update ref for speedup
+        // Else recursively find the parent 
+        // update ref for speedup
         this.parent[i] = this.find(this.parent[i]);
         return this.parent[i];
     }
 
     public unite(i: number, j: number): void {
-    
-        // Representative of set containing i
-        const irep = this.find(i);
-        
-        // Representative of set containing j
-        const jrep = this.find(j);
-        
-        // Make the representative of i's set
-        // be the representative of j's set
-        this.parent[irep] = jrep;
+        this.parent[this.find(i)] = this.find(j);
     }
 }
 
@@ -44,13 +30,11 @@ const getBoxes = (data: string): number[][] => { //[x,y,z]
   return locations;
 }
 
-const getDistance = (p1: number[], p2: number[]): number => {
-  const [x1, y1, z1] = p1;
-  const [x2, y2, z2] = p2;
+const getDistance = ([x1, y1, z1]: number[], [x2, y2, z2]: number[]): number => {
   return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2) + Math.pow(z1 - z2, 2));
 }
 
-const parse = (data: string): {boxes: number[][], flatOrderedDistances: Distance[], uf: UnionFind} => {
+const parse = (data: string): {boxes: number[][], flatOrderedDistances: Distance[]} => {
   const boxes = getBoxes(data);
 
   // index is box id
@@ -61,15 +45,15 @@ const parse = (data: string): {boxes: number[][], flatOrderedDistances: Distance
     }
   }
   flatOrderedDistances.sort((a,b) => a.len - b.len);
-  const uf = new UnionFind(boxes.length);
-  return {boxes, flatOrderedDistances, uf};
+  return {boxes, flatOrderedDistances};
 }
 
 const part1 = (data: string) => {
-  const {boxes, flatOrderedDistances, uf} = parse(data);
+  const {boxes, flatOrderedDistances} = parse(data);
 
   const isTest = boxes.length != 1000;
   const times = isTest ? 10 : 1000;
+  const uf = new UnionFind(boxes.length);
   for (let t=0; t < times; t++) {
     let {x, y} = flatOrderedDistances.shift()!;
     uf.unite(x, y);
@@ -88,7 +72,7 @@ const part1 = (data: string) => {
 
 
 const part2 = (data: string) => {
-  const {boxes, flatOrderedDistances, uf} = parse(data);
+  const {boxes, flatOrderedDistances} = parse(data);
 
   let groups: Set<number> = new Set();
   for (let i=0; i < boxes.length; i++) {
@@ -97,6 +81,7 @@ const part2 = (data: string) => {
   
   let b1: number[] = [];
   let b2: number[] = [];
+  const uf = new UnionFind(boxes.length);
   while (groups.size > 1) {
     let {x, y} = flatOrderedDistances.shift()!;
     
