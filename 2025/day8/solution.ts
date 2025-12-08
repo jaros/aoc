@@ -20,8 +20,9 @@ class UnionFind {
         }
         
         // Else recursively find the representative 
-        // of the parent
-        return this.find(this.parent[i]);
+        // of the parent and update ref for speedup
+        this.parent[i] = this.find(this.parent[i]);
+        return this.parent[i];
     }
 
     public unite(i: number, j: number): void {
@@ -67,18 +68,19 @@ const parse = (data: string): {boxes: number[][], flatOrderedDistances: Distance
 const part1 = (data: string) => {
   const {boxes, flatOrderedDistances, uf} = parse(data);
 
-  const times = boxes.length === 1000 ? 1000 : 10;
+  const isTest = boxes.length != 1000;
+  const times = isTest ? 10 : 1000;
   for (let t=0; t < times; t++) {
     let {x, y} = flatOrderedDistances.shift()!;
     uf.unite(x, y);
   }
 
-  let groups: Record<number, number> = {};
-  for (let i=0; i < boxes.length; i++) {
-    let parent = uf.find(i);
-    groups[parent] = (groups[parent] ?? 0) + 1
-  }
-  let sizes = Object.values(groups);
+  const groupSizes = uf.parent.map((id) => uf.find(id)).reduce((acc, p) => ({
+    ...acc,
+    [p]: (acc[p] ?? 0) + 1
+  }), {} as Record<number, number>);
+
+  let sizes = Object.values(groupSizes);
   sizes.sort((a,b) => b-a);
 
   return sizes[0] * sizes[1] * sizes[2];
@@ -96,7 +98,7 @@ const part2 = (data: string) => {
   let b1: number[] = [];
   let b2: number[] = [];
   while (groups.size > 1) {
-    let {x, y, len} = flatOrderedDistances.shift()!;
+    let {x, y} = flatOrderedDistances.shift()!;
     
     groups.delete(uf.find(x))
     groups.delete(uf.find(y))
