@@ -49,34 +49,29 @@ const getDistance = (p1: number[], p2: number[]): number => {
   return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2) + Math.pow(z1 - z2, 2));
 }
 
-const part1 = (data: string) => {
+const parse = (data: string): {boxes: number[][], flatOrderedDistances: Distance[], uf: UnionFind} => {
   const boxes = getBoxes(data);
 
   // index is box id
-  let allDistances: number[][] = Array.from({length: boxes.length}, () => Array(boxes.length).fill(0));
-  for (let i=0; i < boxes.length; i++) {
-    for (let j=0; j < boxes.length; j++) {
-      allDistances[i][j] = getDistance(boxes[i], boxes[j]);
-    }
-  }
-
   const flatOrderedDistances: Distance[] = [];
-  for (let i=0; i < allDistances.length; i++) {
-    for (let j=i+1; j < allDistances.length; j++) {
-      flatOrderedDistances.push({len: allDistances[i][j], x: i, y: j})
+  for (let i=0; i < boxes.length; i++) {
+    for (let j=i+1; j < boxes.length; j++) {
+      flatOrderedDistances.push({len: getDistance(boxes[i], boxes[j]), x: i, y: j})
     }
   }
   flatOrderedDistances.sort((a,b) => a.len - b.len);
   const uf = new UnionFind(boxes.length);
+  return {boxes, flatOrderedDistances, uf};
+}
+
+const part1 = (data: string) => {
+  const {boxes, flatOrderedDistances, uf} = parse(data);
 
   const times = boxes.length === 1000 ? 1000 : 10;
-  // group Id is the smallest box id => union find
   for (let t=0; t < times; t++) {
     let {x, y} = flatOrderedDistances.shift()!;
     uf.unite(x, y);
   }
-
-  // console.log(uf)
 
   let groups: Record<number, number> = {};
   for (let i=0; i < boxes.length; i++) {
@@ -91,53 +86,26 @@ const part1 = (data: string) => {
 
 
 const part2 = (data: string) => {
-  const boxes = getBoxes(data);
+  const {boxes, flatOrderedDistances, uf} = parse(data);
 
-  // index is box id
-  let allDistances: number[][] = Array.from({length: boxes.length}, () => Array(boxes.length).fill(0));
+  let groups: Set<number> = new Set();
   for (let i=0; i < boxes.length; i++) {
-    for (let j=0; j < boxes.length; j++) {
-      allDistances[i][j] = getDistance(boxes[i], boxes[j]);
-    }
+    groups.add(i);
   }
-
-  const flatOrderedDistances: Distance[] = [];
-  for (let i=0; i < allDistances.length; i++) {
-    for (let j=i+1; j < allDistances.length; j++) {
-      flatOrderedDistances.push({len: allDistances[i][j], x: i, y: j})
-    }
-  }
-  flatOrderedDistances.sort((a,b) => a.len - b.len);
-  const uf = new UnionFind(boxes.length);
-
-  // group Id is the smallest box id => union find
-  // let connectedBoxesGroups = [];
-  let disconnectedGroups: Set<number> = new Set();
-  for (let i=0; i < boxes.length; i++) {
-    disconnectedGroups.add(i);
-  }
-
   
-  // do it until 1 group remain
   let b1: number[] = [];
   let b2: number[] = [];
-  let counter = 0;
-  while (disconnectedGroups.size > 1) {
+  while (groups.size > 1) {
     let {x, y, len} = flatOrderedDistances.shift()!;
-    // console.log("join", {x, y, len})
     
-    // merged into group
-    disconnectedGroups.delete(uf.find(x))
-    disconnectedGroups.delete(uf.find(y))
+    groups.delete(uf.find(x))
+    groups.delete(uf.find(y))
     uf.unite(x, y);
     
-    disconnectedGroups.add(uf.find(x));
-    counter++;
+    groups.add(uf.find(x));
     
     b1 = boxes[x]
     b2 = boxes[y]
-
-    // console.log("connecting", x, y, boxes[x], boxes[y])
   }
   return b1[0] * b2[0];
 };
