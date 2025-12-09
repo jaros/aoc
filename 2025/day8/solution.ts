@@ -85,8 +85,8 @@ const part2 = (data: string) => {
   while (groups.size > 1) {
     let {x, y} = flatOrderedDistances.shift()!;
     
-    groups.delete(uf.find(x))
-    groups.delete(uf.find(y))
+    groups.delete(uf.find(x));
+    groups.delete(uf.find(y));
     uf.unite(x, y);
     
     groups.add(uf.find(x));
