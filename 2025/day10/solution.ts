@@ -1,5 +1,4 @@
 
-import { i } from "mathjs";
 import { sum } from "../../2023/utils";
 import { Solution, readInput, title, withTime } from "../../common/types";
 
