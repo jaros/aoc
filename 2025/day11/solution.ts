@@ -40,7 +40,43 @@ const part1 = (data: string) => {
 }
 
 const part2 = (data: string) => {
-  return 0;
+  const lines = getLines(data);
+  const map = new Map<string, Array<string>>();
+  for (let line of lines) {
+    let [key, vals] = line.split(": ")
+    map.set(key, vals.split(" "));
+  }
+  // console.log(map)
+
+  let cache = new Map(); // precalculated paths to avoid recalculation
+
+  const traverse = (node: string, hasFft: boolean, hasDac: boolean): number => {
+    let children = map.get(node);
+    if (!children) {
+      return 0;
+    }
+
+    const cacheKey = `${node}|${hasFft ? 1 : 0}|${hasDac ? 1 : 0}`;
+    if (cache.has(cacheKey)) {
+      return cache.get(cacheKey)!;
+    }
+    let ways = 0;
+    for (let child of children) {
+      const nextHasFft = hasFft || child === "fft";
+      const nextHasDac = hasDac || child === "dac";
+      if (child === "out") {
+        if (nextHasFft && nextHasDac) {
+          ways += 1;
+        }
+      } else {
+        ways += traverse(child, nextHasFft, nextHasDac);
+      }
+    }
+    cache.set(cacheKey, ways);
+    return ways;
+  }
+
+  return traverse("svr", false, false)
 }
 
 export const solve: Solution = (source) => {
